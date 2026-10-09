@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E4B3A">
+<title>RHBox</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root{
+    --foret:#0E4B3A; --foret-2:#146B52; --ambre:#EE9B1F; --ambre-clair:#FBE3B8;
+    --brume:#EDF2EF; --encre:#10211B; --gris:#5E6F68; --ligne:#D5DFDA; --blanc:#fff;
+    --rouge:#B3402A; --vert-ok:#1E7F4F;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:"Avenir Next","Segoe UI",system-ui,-apple-system,sans-serif;background:var(--brume);color:var(--encre);-webkit-font-smoothing:antialiased}
+  button,input,select{font:inherit;color:inherit}
+  button{cursor:pointer;border:0;background:none}
+  :focus-visible{outline:3px solid var(--ambre);outline-offset:2px}
+  h1{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+  h2{font-size:17px;font-weight:750;letter-spacing:-.01em;margin:22px 0 10px}
+  .sous{color:var(--gris);font-size:14px;line-height:1.45;margin-top:6px}
+  .note{font-size:12.5px;color:var(--gris);margin-top:14px;line-height:1.4}
+  .centre{min-height:100dvh;display:grid;place-items:center;color:var(--gris)}
+
+  /* Connexion et création de l'espace */
+  .plein{min-height:100dvh;padding:34px 20px 40px;display:flex;flex-direction:column;align-items:center}
+  .plein>*{width:100%;max-width:440px}
+  .plein.vert{background:var(--foret);color:var(--blanc)}
+  .plein.vert .sous{color:#bcd7cc}
+  .logo-ligne{display:flex;align-items:center;gap:12px;margin-bottom:24px;font-size:24px;font-weight:800;letter-spacing:-.02em}
+  .form label{display:block;font-size:13px;color:var(--gris);margin:14px 0 6px}
+  .vert .form label{color:#bcd7cc}
+  .form input,.form select{width:100%;padding:14px;border-radius:12px;border:1.5px solid var(--ligne);background:var(--blanc);font-size:16px}
+  .vert .form input,.vert .form select{background:#0b3f31;border-color:#2f7a63;color:var(--blanc)}
+  .btn{display:block;width:100%;padding:15px;border-radius:14px;font-weight:750;font-size:16px;background:var(--foret);color:var(--blanc);margin-top:20px}
+  .btn.ambre{background:var(--ambre);color:var(--encre)}
+  .btn.clair{background:var(--brume);color:var(--foret)}
+  .btn.rouge{background:#f6d9d3;color:var(--rouge)}
+  .btn[disabled]{opacity:.45;cursor:not-allowed}
+  .lien{margin-top:18px;color:var(--foret-2);text-decoration:underline;font-size:14px;text-align:center;width:100%}
+  .vert .lien{color:#bcd7cc}
+  .msg{margin-top:14px;font-size:14px;color:var(--rouge);background:var(--blanc);padding:11px 13px;border-radius:10px;line-height:1.4}
+  .msg.ok{color:var(--vert-ok)}
+  .combo{position:relative}
+  .options{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:5;list-style:none;background:var(--blanc);color:var(--encre);border-radius:12px;max-height:230px;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,.25);display:none}
+  .options.ouvert{display:block}
+  .options li{padding:12px 14px;font-size:15px;border-bottom:1px solid var(--ligne);cursor:pointer}
+  .options li:last-child{border-bottom:0}
+  .options li:hover{background:var(--ambre-clair)}
+  .options li.perso{font-weight:700;color:var(--foret)}
+  .pack{margin-top:18px;background:var(--blanc);color:var(--encre);border-radius:16px;padding:16px;border-left:6px solid var(--ambre);font-size:14px;line-height:1.7}
+
+  /* Application */
+  .app{display:flex;flex-direction:column;height:100dvh}
+  .ecran{flex:1;overflow-y:auto;padding:20px 18px 28px}
+  .ecran>*{max-width:900px;margin-left:auto;margin-right:auto}
+  .tabs{display:flex;background:var(--blanc);border-top:1px solid var(--ligne);padding:6px 6px calc(6px + env(safe-area-inset-bottom));justify-content:space-around}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;font-size:11px;color:var(--gris);border-radius:10px}
+  .tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .tab[aria-selected="true"]{color:var(--foret);font-weight:700}
+  .tab[aria-selected="true"]::after{content:"";width:18px;height:3px;border-radius:2px;background:var(--ambre);margin-top:1px}
+  .brand{display:none}
+  .tab.extra{display:none}
+
+  .kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:16px}
+  .kpi{background:var(--blanc);border-radius:14px;padding:14px}
+  .kpi small{display:block;color:var(--gris);font-size:12.5px;margin-bottom:4px}
+  .kpi b{font-size:22px;letter-spacing:-.02em}
+  .carte{background:var(--blanc);border-radius:16px;padding:14px;margin-bottom:10px}
+  .etape{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--ligne);font-size:15px}
+  .etape:first-child{border-top:0}
+  .pastille{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--ligne);display:grid;place-items:center;font-size:13px;font-weight:800;margin-top:1px}
+  .pastille.fait{background:var(--foret-2);border-color:var(--foret-2);color:var(--blanc)}
+  .recherche{width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid var(--ligne);background:var(--blanc);font-size:15px;margin:14px 0 10px}
+  .sal{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--blanc);border-radius:14px;padding:12px;margin-bottom:8px}
+  .avatar{flex:none;width:44px;height:44px;border-radius:50%;background:var(--ambre-clair);color:var(--foret);font-weight:800;display:grid;place-items:center}
+  .sal strong{display:block;font-size:15px}
+  .sal small{color:var(--gris);font-size:13px}
+  .modules{background:var(--blanc);border-radius:16px;overflow:hidden}
+  .module{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px;border-top:1px solid var(--ligne);font-size:15px}
+  .module:first-child{border-top:0}
+  .module small{display:block;color:var(--gris);font-size:12.5px;margin-top:2px}
+  .bientot{font-size:12px;font-weight:700;padding:4px 9px;border-radius:20px;background:var(--brume);color:var(--gris);white-space:nowrap}
+  .switch{position:relative;width:46px;height:28px;border-radius:14px;background:#b9c6c0;flex:none;transition:background .15s}
+  .switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--blanc);transition:transform .15s}
+  .switch[aria-checked="true"]{background:var(--foret-2)}
+  .switch[aria-checked="true"]::after{transform:translateX(18px)}
+  .switch[disabled]{opacity:.5;cursor:not-allowed}
+  .ligne-info{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--ligne);font-size:14.5px}
+  .ligne-info:first-child{border-top:0}
+  .ligne-info span:first-child{color:var(--gris)}
+  .ligne-info span:last-child{font-weight:650;text-align:right}
+
+  .fond{position:fixed;inset:0;background:rgba(16,33,27,.5);display:none;align-items:flex-end;justify-content:center;z-index:20}
+  .fond.visible{display:flex}
+  .feuille{background:var(--blanc);width:100%;max-width:520px;max-height:92dvh;overflow-y:auto;border-radius:22px 22px 0 0;padding:20px 18px 26px}
+  .bar{height:10px;border-radius:6px;background:var(--brume);overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--foret-2)}
+  .brow{display:grid;grid-template-columns:120px 1fr 36px;gap:10px;align-items:center;font-size:13.5px;margin:9px 0}
+  .brow span:last-child{text-align:right;font-weight:700}
+  .niv{width:auto;padding:8px;border-radius:10px;border:1.5px solid var(--ligne);background:var(--blanc);font-size:14px}
+  .chip-s{font-size:12px;font-weight:700;padding:4px 9px;border-radius:20px;white-space:nowrap}
+  .s-ok{background:#d9efe3;color:var(--vert-ok)} .s-ko{background:#f6d9d3;color:var(--rouge)}
+  .s-att{background:var(--ambre-clair);color:#8a5400} .s-nd{background:var(--brume);color:var(--gris)}
+  .petit{font-size:13px;padding:8px 12px;border-radius:10px;background:var(--brume);color:var(--foret);font-weight:700}
+  .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--encre);color:var(--blanc);padding:11px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;max-width:90%;text-align:center}
+  .toast.on{opacity:1}
+
+  @media (min-width:900px){
+    .app{flex-direction:row}
+    .tabs{order:-1;flex-direction:column;justify-content:flex-start;width:230px;flex:none;border-top:0;border-right:1px solid var(--ligne);padding:20px 14px;gap:3px}
+    .tab{flex:none;flex-direction:row;justify-content:flex-start;gap:12px;font-size:15px;padding:11px 14px;text-align:left}
+    .tab[aria-selected="true"]{background:var(--brume)}
+    .tab[aria-selected="true"]::after{display:none}
+    .brand{display:flex;align-items:center;gap:10px;padding:2px 10px 16px;font-weight:800;font-size:20px;letter-spacing:-.02em}
+    .ecran{padding:32px 40px 40px}
+    .fond{align-items:center}
+    .tab.extra{display:flex}
+    .tab.plus{display:none}
+    .feuille{border-radius:22px;max-width:460px}
+    .toast{bottom:28px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="logo" viewBox="0 0 64 64">
+    <polygon points="8,20 32,33 32,59 8,46" fill="#0b3f31"/>
+    <polygon points="56,20 32,33 32,59 56,46" fill="#146B52"/>
+    <polygon points="32,7 56,20 32,33 8,20" fill="#EE9B1F"/>
+    <circle cx="32" cy="16.5" r="4.6" fill="#fff"/>
+    <path d="M23.5 23.5c1.6-4.2 4.8-5.6 8.5-5.6s6.9 1.4 8.5 5.6L32 28.3z" fill="#fff"/>
+  </symbol>
+</svg>
+<div id="root"><div class="centre">Chargement…</div></div>
+<div class="fond" id="fond"><div class="feuille" id="feuille" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ============ Configuration (clés publiques : sans danger dans l'application) ============ */
+const CFG = {
+  url: 'https://bikimifpstkzcyocxmbg.supabase.co',
+  // Clé "anon" publique du projet. Ne mettez JAMAIS ici la clé service_role ni le mot de passe de la base.
+  key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpa2ltaWZwc3RremN5b2N4bWJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzOTY5MTIsImV4cCI6MjEwNjk3MjkxMn0.wggNLKWaPiu-17KafuDNP-8zCkPZEejrlSgV7QoycT0'
+};
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const ini = (a, b) => ((a || '')[0] || '') + ((b || '')[0] || '');
+
+const ROLES = { admin:'Administrateur', drh:'DRH', hr_manager:'Responsable RH', hr_assistant:'Assistant RH', manager:'Manager', employee:'Salarié' };
+const RH = ['admin','drh','hr_manager','hr_assistant'];
+const RH_SENIOR = ['admin','drh','hr_manager'];
+const MODULES = {
+  employees:['Salariés','Dossiers, contrats, documents',true],
+  attendance:['Présence','Pointage, retards, heures supplémentaires',true],
+  leave:['Congés','Demandes, validation, soldes',true],
+  payroll:['Paie','Bulletins, primes, cotisations',true],
+  recruitment:['Recrutement','Offres, candidats, score expliqué',true],
+  career:['Carrière, formation et GPEC','Évaluations, compétences, plan de formation',true],
+  communication:['Communication','Annonces et notes de service',true],
+  documents:['Documents','Contrats, attestations, règlement',true],
+  reports:['Rapports','Masse salariale, effectifs, exports',true],
+  ai:['Assistant IA','Questions sur le droit du travail',false]
+};
+
+const S = { session:null, profile:null, company:null, employees:[], modules:[], countries:[], sectors:[], tab:'accueil', loading:true, recherche:'' };
+
+/* ============ Accès à Supabase (sans bibliothèque) ============ */
+function saveSession(d){
+  S.session = { access_token:d.access_token, refresh_token:d.refresh_token, expires_at:Math.floor(Date.now()/1000)+(d.expires_in||3600), user:d.user };
+  localStorage.setItem('rhbox_session', JSON.stringify(S.session));
+}
+function loadSession(){ try{ S.session = JSON.parse(localStorage.getItem('rhbox_session')); }catch{ S.session = null; } }
+function resetLocal(){
+  S.session = null; S.profile = null; S.company = null; S.employees = []; S.modules = []; S.me = null; S.tab = 'accueil';
+  localStorage.removeItem('rhbox_session');
+}
+async function raw(path, { method='GET', body, headers={}, auth=true } = {}){
+  const h = { apikey: CFG.key, 'Content-Type':'application/json', ...headers };
+  if (auth && S.session) h.Authorization = 'Bearer ' + S.session.access_token;
+  const r = await fetch(CFG.url + path, { method, headers:h, body: body ? JSON.stringify(body) : undefined });
+  const t = await r.text(); let data = null;
+  if (t){ try{ data = JSON.parse(t); }catch{ data = t; } }
+  if (!r.ok){
+    const m = (data && (data.message || data.msg || data.error_description || data.error)) || ('Erreur ' + r.status);
+    const e = new Error(m); e.status = r.status; throw e;
+  }
+  return data;
+}
+async function refreshIfNeeded(){
+  if (!S.session || S.session.expires_at - 60 > Date.now()/1000) return;
+  try{
+    const d = await raw('/auth/v1/token?grant_type=refresh_token', { method:'POST', body:{ refresh_token:S.session.refresh_token }, auth:false });
+    saveSession(d);
+  }catch{ resetLocal(); render(); throw new Error('Session expirée, reconnectez-vous.'); }
+}
+async function api(path, opts={}){ await refreshIfNeeded(); return raw(path, opts); }
+
+function traduire(m){
+  if (/invalid login/i.test(m)) return 'E-mail ou mot de passe incorrect.';
+  if (/not confirmed/i.test(m)) return "Confirmez d'abord votre e-mail (lien reçu par message).";
+  if (/already registered|already been registered/i.test(m)) return 'Un compte existe déjà avec cet e-mail.';
+  if (/password/i.test(m) && /6|8|short|weak/i.test(m)) return 'Mot de passe trop court (8 caractères minimum).';
+  if (/failed to fetch|networkerror/i.test(m)) return 'Pas de connexion internet.';
+  if (/foreign key/i.test(m)) return 'Impossible : cet élément est déjà utilisé ailleurs.';
+  if (/duplicate key|unique constraint/i.test(m)) return 'Un matricule existe déjà : vérifiez les doublons.';
+  return m;
+}
+
+/* ============ Chargement des données ============ */
+async function loadRefs(){
+  const [c, s] = await Promise.all([
+    api('/rest/v1/countries?select=code,name,currency&order=name.asc'),
+    api('/rest/v1/sectors?select=name&order=name.asc')
+  ]);
+  S.countries = c; S.sectors = s.map(x => x.name);
+}
+async function loadCompany(){
+  const [co, mo] = await Promise.all([
+    api('/rest/v1/companies?select=id,name,country_code,sector_name,work_start,retirement_age'),
+    api('/rest/v1/company_modules?select=module_code,enabled')
+  ]);
+  S.company = co[0] || null; S.modules = mo;
+  await loadEmployees();
+  await loadMe();
+}
+async function loadEmployees(){
+  S.employees = await api('/rest/v1/employees?select=id,first_name,last_name,job_title,department,matricule,phone,email,hired_on&order=last_name.asc');
+}
+async function loadMe(){
+  const r = await api(`/rest/v1/employees?select=id,first_name,last_name,job_title,phone,address,birth_date,marital_status&user_id=eq.${S.session.user.id}&limit=1`);
+  S.me = r[0] || null;
+}
+async function loadAll(){
+  S.loading = true; render();
+  try{
+    await loadRefs();
+    const p = await api(`/rest/v1/profiles?select=id,company_id,full_name,role,email&id=eq.${S.session.user.id}`);
+    S.profile = p[0] || null;
+    if (S.profile) await loadCompany();
+  }catch(e){ toast(traduire(e.message)); }
+  S.loading = false; render();
+}
+
+/* ============ Affichage ============ */
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 2600); }
+function ouvrirFeuille(html){ $('#feuille').innerHTML = html; $('#fond').classList.add('visible'); }
+function fermerFeuille(){ $('#fond').classList.remove('visible'); }
+$('#fond').addEventListener('click', e => { if (e.target.id === 'fond') fermerFeuille(); });
+const logo = t => `<div class="logo-ligne"><svg width="52" height="52" aria-hidden="true"><use href="#logo"/></svg><span>${t}</span></div>`;
+
+function render(){
+  const root = $('#root');
+  if (S.loading) { root.innerHTML = '<div class="centre">Chargement…</div>'; return; }
+  if (!S.session) return viewAuth(root);
+  if (!S.profile) return viewOnboard(root);
+  viewApp(root);
+}
+
+/* ---------- Connexion / inscription ---------- */
+let modeAuth = 'connexion';
+function viewAuth(root){
+  root.innerHTML = `<main class="plein">
+    ${logo('RHBox')}
+    <h1>${modeAuth === 'connexion' ? 'Connexion' : 'Créer votre compte'}</h1>
+    <p class="sous">${modeAuth === 'connexion' ? 'Retrouvez l\'espace RH de votre entreprise.' : 'Quelques secondes suffisent pour commencer.'}</p>
+    <form class="form" id="f-auth">
+      <label for="email">E-mail</label>
+      <input id="email" type="email" required autocomplete="email" inputmode="email">
+      <label for="pwd">Mot de passe</label>
+      <input id="pwd" type="password" required minlength="8" autocomplete="${modeAuth === 'connexion' ? 'current-password' : 'new-password'}">
+      <button class="btn" id="b-auth">${modeAuth === 'connexion' ? 'Se connecter' : 'Créer mon compte'}</button>
+    </form>
+    <div id="msg-auth" role="status"></div>
+    <button class="lien" id="b-mode">${modeAuth === 'connexion' ? "Pas encore de compte ? S'inscrire" : 'Déjà un compte ? Se connecter'}</button>
+  </main>`;
+  $('#b-mode').onclick = () => { modeAuth = modeAuth === 'connexion' ? 'inscription' : 'connexion'; render(); };
+  $('#f-auth').onsubmit = async e => {
+    e.preventDefault();
+    const email = $('#email').value.trim(), password = $('#pwd').value;
+    const b = $('#b-auth'), m = $('#msg-auth'); b.disabled = true; m.innerHTML = '';
+    try{
+      if (modeAuth === 'inscription'){
+        const d = await raw('/auth/v1/signup', { method:'POST', body:{ email, password }, auth:false });
+        if (d && d.access_token){ saveSession(d); return loadAll(); }
+        m.innerHTML = '<p class="msg ok">Compte créé. Confirmez votre e-mail avec le lien reçu, puis connectez-vous.</p>';
+        modeAuth = 'connexion';
+      } else {
+        const d = await raw('/auth/v1/token?grant_type=password', { method:'POST', body:{ email, password }, auth:false });
+        saveSession(d); return loadAll();
+      }
+    }catch(err){ m.innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; }
+    b.disabled = false;
+  };
+}
+
+/* ---------- Création de l'espace ---------- */
+function viewOnboard(root){
+  root.innerHTML = `<main class="plein vert">
+    ${logo('RHBox')}
+    <h1>Créez l'espace RH de votre entreprise</h1>
+    <p class="sous">Choisissez votre pays et votre secteur d'activité.</p>
+    <form class="form" id="f-on">
+      <label for="ent">Nom de l'entreprise</label>
+      <input id="ent" required autocomplete="organization">
+      <label for="nom">Votre nom</label>
+      <input id="nom" autocomplete="name">
+      <label for="pays">Pays</label>
+      <select id="pays" required><option value="">Choisir un pays</option>${S.countries.map(c => `<option value="${esc(c.code)}">${esc(c.name)}</option>`).join('')}</select>
+      <div class="combo"><label for="sect">Secteur d'activité</label>
+        <input id="sect" required autocomplete="off" placeholder="Chercher votre secteur" role="combobox" aria-expanded="false" aria-controls="opts">
+        <ul class="options" id="opts" role="listbox"></ul></div>
+      <div id="pack"></div>
+      <button class="btn ambre" id="b-on" disabled>Créer mon espace</button>
+    </form>
+    <div id="msg-on" role="alert"></div>
+    <button class="lien" id="b-out">Se déconnecter</button>
+  </main>`;
+  const sect = $('#sect'), opts = $('#opts');
+  let choisi = '';
+  const maj = () => {
+    const c = S.countries.find(x => x.code === $('#pays').value);
+    $('#pack').innerHTML = (c && choisi) ? `<div class="pack"><strong>Votre espace</strong><br>Pays : ${esc(c.name)}<br>Monnaie : ${esc(c.currency)}<br>Secteur : ${esc(choisi)}<br><span style="color:var(--gris);font-size:13px">Les règles de paie et de congés seront activées après vérification des textes officiels du pays.</span></div>` : '';
+    $('#b-on').disabled = !(c && choisi);
+  };
+  const liste = () => {
+    const brut = sect.value.trim(), q = norm(brut);
+    const res = S.sectors.filter(s => norm(s).includes(q)).slice(0, 12);
+    let h = res.map(s => `<li role="option" data-v="${esc(s)}">${esc(s)}</li>`).join('');
+    if (brut && !S.sectors.some(s => norm(s) === q)) h += `<li role="option" class="perso" data-v="${esc(brut)}">Utiliser « ${esc(brut)} »</li>`;
+    opts.innerHTML = h; opts.classList.toggle('ouvert', !!h); sect.setAttribute('aria-expanded', !!h);
+  };
+  sect.oninput = () => { choisi = ''; maj(); liste(); };
+  sect.onfocus = liste;
+  opts.onmousedown = opts.ontouchstart = e => {
+    const li = e.target.closest('li'); if (!li) return;
+    e.preventDefault(); choisi = li.dataset.v; sect.value = choisi; opts.classList.remove('ouvert'); maj();
+  };
+  sect.onblur = () => { setTimeout(() => { opts.classList.remove('ouvert'); if (!choisi && sect.value.trim()){ const ex = S.sectors.find(s => norm(s) === norm(sect.value.trim())); choisi = ex || sect.value.trim(); sect.value = choisi; maj(); } }, 150); };
+  $('#pays').onchange = maj;
+  $('#b-out').onclick = signout;
+  $('#f-on').onsubmit = async e => {
+    e.preventDefault();
+    const b = $('#b-on'); b.disabled = true; $('#msg-on').innerHTML = '';
+    try{
+      await api('/rest/v1/rpc/create_company', { method:'POST', body:{ p_name:$('#ent').value, p_country:$('#pays').value, p_sector:choisi, p_full_name:$('#nom').value || null } });
+      return loadAll();
+    }catch(err){ $('#msg-on').innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; b.disabled = false; }
+  };
+}
+
+/* ---------- Application ---------- */
+const ICONES = {
+  accueil:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  salaries:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.8 3.3-5.5 6.5-5.5s5.9 1.7 6.5 5.5"/><path d="M16 5a3.3 3.3 0 0 1 0 6.2M18 14.8c2 .6 3.2 2.300 3.500 5.200"/>',
+  modules:'<rect x="3.500" y="3.500" width="7" height="7" rx="1.500"/><rect x="13.500" y="3.500" width="7" height="7" rx="1.500"/><rect x="3.500" y="13.500" width="7" height="7" rx="1.500"/><rect x="13.500" y="13.500" width="7" height="7" rx="1.500"/>',
+  presence:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  carriere:'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+  formation:'<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.500 2.700 3 6 3s6-1.500 6-3v-5"/>',
+  gpec:'<path d="M5 20V10M12 20V4M19 20v-7"/>',
+  rapports:'<path d="M4 20h16M7 16V9M12 16V5M17 16v-4"/>',
+  paie:'<rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.8"/>',
+  recrutement:'<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/>',
+  documents:'<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/>',
+  communication:'<path d="M4 10v4h3l7 4V6L7 10z"/><path d="M17.500 9a4 4 0 0 1 0 6"/>',
+  plus:'<circle cx="5" cy="12" r="1.500"/><circle cx="12" cy="12" r="1.500"/><circle cx="19" cy="12" r="1.500"/>',
+  conges:'<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  compte:'<circle cx="12" cy="8" r="4"/><path d="M4 21c.8-4.200 4-6 8-6s7.200 1.800 8 6"/>'
+};
+const TABS = [['accueil','Accueil',0],['salaries','Salariés',0],['presence','Présence',0],['conges','Congés',0],['paie','Paie',1],['recrutement','Recrutement',1],['carriere','Carrière',1],['formation','Formation',1],['gpec','GPEC',1],['communication','Communication',1],['documents','Documents',1],['rapports','Rapports',1],['modules','Modules',1],['compte','Compte',1]];
+const MODULE_DE = { presence:'attendance', conges:'leave', carriere:'career', formation:'career', gpec:'career', communication:'communication', paie:'payroll', recrutement:'recruitment', documents:'documents', rapports:'reports' };
+const RH_SEUL = ['gpec', 'recrutement', 'rapports'];
+const moduleActif = code => { const m = S.modules.find(x => x.module_code === code); return !m || m.enabled; };
+const ongletVisible = k => (!MODULE_DE[k] || moduleActif(MODULE_DE[k])) && (!RH_SEUL.includes(k) || RH.includes(S.profile.role));
+const nomPays = c => (S.countries.find(x => x.code === c) || {}).name || c;
+const peutEcrire = () => RH.includes(S.profile.role);
+const peutSupprimer = () => RH_SENIOR.includes(S.profile.role);
+
+function viewApp(root){
+  root.innerHTML = `<div class="app">
+    <div class="ecran" id="ecran"></div>
+    <nav class="tabs" aria-label="Navigation">
+      <div class="brand"><svg width="34" height="34" aria-hidden="true"><use href="#logo"/></svg><span>RHBox</span></div>
+      ${TABS.filter(([k]) => ongletVisible(k)).map(([k, l, x]) => `<button class="tab${x ? ' extra' : ''}" data-t="${k}" aria-selected="${S.tab === k}"><svg viewBox="0 0 24 24">${ICONES[k]}</svg>${l}</button>`).join('')}
+      <button class="tab plus" data-t="plus" aria-selected="${S.tab === 'plus' || (TABS.find(t => t[0] === S.tab) || [0, 0, 0])[2] === 1}"><svg viewBox="0 0 24 24">${ICONES.plus}</svg>Plus</button>
+    </nav></div>`;
+  root.querySelectorAll('.tab').forEach(b => b.onclick = () => { S.tab = b.dataset.t; viewApp(root); });
+  const e = $('#ecran');
+  if (!ongletVisible(S.tab)) S.tab = 'accueil';
+  ({ accueil:tabAccueil, salaries:tabSalaries, presence:tabPresence, conges:tabConges, carriere:tabCarriere, formation:tabFormation, gpec:tabGpec, communication:tabCommunication, paie:tabPaie, recrutement:tabRecrutement, documents:tabDocuments, rapports:tabRapports, modules:tabModules, compte:tabCompte, plus:tabPlus })[S.tab](e);
+}
+
+function tabAccueil(e){
+  const actifs = S.modules.filter(m => m.enabled).length;
+  const aDesSalaries = S.employees.length > 0;
+  e.innerHTML = `<h1>${esc(S.company.name)}</h1>
+    <p class="sous">${esc(nomPays(S.company.country_code))} · ${esc(S.company.sector_name)}</p>
+    <div class="kpis">
+      <div class="kpi"><small>Salariés</small><b>${S.employees.length}</b></div>
+      <div class="kpi"><small>Modules actifs</small><b>${actifs}</b></div>
+      <div class="kpi"><small>Votre rôle</small><b style="font-size:16px">${esc(ROLES[S.profile.role])}</b></div>
+    </div>
+    <h2>Pour commencer</h2>
+    <div class="carte">
+      <div class="etape"><span class="pastille fait">✓</span><span>Espace de l'entreprise créé</span></div>
+      <div class="etape"><span class="pastille ${aDesSalaries ? 'fait' : ''}">${aDesSalaries ? '✓' : '2'}</span><span>${aDesSalaries ? 'Premiers salariés ajoutés' : 'Ajoutez vos premiers salariés (onglet Salariés)'}</span></div>
+      <div class="etape"><span class="pastille">3</span><span>Tous les modules sont disponibles, sauf l'assistant IA (bientôt)</span></div>
+    </div>
+    <p class="note">Les règles de paie et de congés de chaque pays seront activées après vérification des textes officiels.</p>`;
+}
+
+function listeSalaries(){
+  const q = norm(S.recherche);
+  const res = S.employees.filter(x => norm(`${x.first_name} ${x.last_name} ${x.job_title || ''}`).includes(q));
+  const z = $('#liste-sal');
+  z.innerHTML = res.length ? res.map(x => `<button class="sal" data-id="${esc(x.id)}"><div class="avatar">${esc(ini(x.first_name, x.last_name))}</div><div><strong>${esc(x.first_name)} ${esc(x.last_name)}</strong><small>${esc(x.job_title || 'Poste à préciser')}</small></div></button>`).join('')
+    : `<p class="sous">${S.employees.length ? 'Aucun salarié ne correspond.' : 'Aucun salarié pour le moment.'}</p>`;
+  z.querySelectorAll('.sal').forEach(b => b.onclick = () => ficheSalarie(b.dataset.id));
+}
+function tabSalaries(e){
+  e.innerHTML = `<h1>Salariés</h1><p class="sous">${S.employees.length} dossier${S.employees.length > 1 ? 's' : ''}</p>
+    ${peutEcrire() ? '<button class="btn" id="b-add" style="margin-top:14px">Ajouter un salarié</button><button class="btn clair" id="b-tab" style="margin-top:10px">Importer depuis Excel ou CSV</button><button class="btn clair" id="b-pdf" style="margin-top:10px">Importer un PDF (IA, bientôt)</button>' : ''}
+    <input class="recherche" id="rech" type="search" placeholder="Chercher un nom ou un poste" aria-label="Chercher un salarié" value="${esc(S.recherche)}">
+    <div id="liste-sal"></div>`;
+  $('#rech').oninput = ev => { S.recherche = ev.target.value; listeSalaries(); };
+  if ($('#b-add')) $('#b-add').onclick = formSalarie;
+  if ($('#b-pdf')) $('#b-pdf').onclick = importPdf;
+  if ($('#b-tab')) $('#b-tab').onclick = importTableur;
+  listeSalaries();
+}
+function formSalarie(){
+  ouvrirFeuille(`<h2 style="margin-top:0">Nouveau salarié</h2><form class="form" id="f-sal">
+    <label for="s-p">Prénom</label><input id="s-p" required>
+    <label for="s-n">Nom</label><input id="s-n" required>
+    <label for="s-j">Poste</label><input id="s-j">
+    <label for="s-d">Service</label><input id="s-d">
+    <label for="s-m">Matricule</label><input id="s-m">
+    <label for="s-t">Téléphone</label><input id="s-t" type="tel">
+    <label for="s-e">E-mail</label><input id="s-e" type="email">
+    <label for="s-h">Date d'embauche</label><input id="s-h" type="date">
+    <button class="btn" id="s-ok">Ajouter</button>
+    <button class="btn clair" type="button" id="s-no">Annuler</button></form><div id="s-msg"></div>`);
+  $('#s-no').onclick = fermerFeuille;
+  $('#f-sal').onsubmit = async ev => {
+    ev.preventDefault(); const b = $('#s-ok'); b.disabled = true;
+    const v = id => $(id).value.trim() || null;
+    try{
+      await api('/rest/v1/employees', { method:'POST', headers:{ Prefer:'return=minimal' }, body:{
+        company_id:S.profile.company_id, first_name:$('#s-p').value.trim(), last_name:$('#s-n').value.trim(),
+        job_title:v('#s-j'), department:v('#s-d'), matricule:v('#s-m'), phone:v('#s-t'), email:v('#s-e'), hired_on:v('#s-h') } });
+      await loadEmployees(); fermerFeuille(); toast('Salarié ajouté'); viewApp($('#root'));
+    }catch(err){ $('#s-msg').innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; b.disabled = false; }
+  };
+}
+function ficheSalarie(id){
+  const x = S.employees.find(s => s.id === id); if (!x) return;
+  const l = (a, b) => `<div class="ligne-info"><span>${a}</span><span>${esc(b || 'Non renseigné')}</span></div>`;
+  ouvrirFeuille(`<div style="display:flex;gap:14px;align-items:center;margin-bottom:12px"><div class="avatar" style="width:56px;height:56px;font-size:19px">${esc(ini(x.first_name, x.last_name))}</div>
+    <div><strong style="font-size:18px">${esc(x.first_name)} ${esc(x.last_name)}</strong><br><small style="color:var(--gris)">${esc(x.job_title || 'Poste à préciser')}</small></div></div>
+    ${l('Service', x.department)}${l('Matricule', x.matricule)}${l('Téléphone', x.phone)}${l('E-mail', x.email)}${l("Date d'embauche", x.hired_on)}
+    <h2>Documents</h2><div class="carte" id="f-docs" style="padding:4px 12px">Chargement…</div>
+    ${peutEcrire() ? '<button class="btn clair" id="f-adddoc" style="margin-top:0">Ajouter un document</button>' : ''}
+    ${peutSupprimer() ? '<button class="btn rouge" id="f-del">Supprimer ce dossier</button>' : ''}
+    <button class="btn clair" id="f-close">Fermer</button>`);
+  $('#f-close').onclick = fermerFeuille;
+  chargerDocs(x.id, '#f-docs', peutEcrire());
+  if ($('#f-adddoc')) $('#f-adddoc').onclick = () => formDoc(async () => x.id, () => ficheSalarie(x.id));
+  if ($('#f-del')) $('#f-del').onclick = async () => {
+    if (!confirm('Supprimer définitivement ce dossier ?')) return;
+    try{ await api(`/rest/v1/employees?id=eq.${encodeURIComponent(id)}`, { method:'DELETE' }); await loadEmployees(); fermerFeuille(); toast('Dossier supprimé'); viewApp($('#root')); }
+    catch(err){ toast(traduire(err.message)); }
+  };
+}
+
+function tabModules(e){
+  const droit = ['admin','drh'].includes(S.profile.role);
+  const etat = c => (S.modules.find(m => m.module_code === c) || {}).enabled;
+  e.innerHTML = `<h1>Modules</h1><p class="sous">Chaque module peut être activé ou non pour votre entreprise.</p>
+    <div class="modules" style="margin-top:16px">${Object.entries(MODULES).map(([c, [nom, desc, dispo]]) => `
+      <div class="module"><div>${nom}<small>${desc}</small></div>
+      ${dispo ? `<button class="switch" role="switch" data-c="${c}" aria-checked="${!!etat(c)}" aria-label="${nom}" ${droit ? '' : 'disabled'}></button>` : '<span class="bientot">Bientôt</span>'}</div>`).join('')}</div>
+    ${droit ? '' : '<p class="note">Seuls l\'administrateur et le DRH peuvent modifier les modules.</p>'}`;
+  e.querySelectorAll('.switch').forEach(b => b.onclick = async () => {
+    const nv = b.getAttribute('aria-checked') !== 'true';
+    try{
+      await api(`/rest/v1/company_modules?company_id=eq.${S.profile.company_id}&module_code=eq.${b.dataset.c}`, { method:'PATCH', headers:{ Prefer:'return=minimal' }, body:{ enabled:nv } });
+      const m = S.modules.find(x => x.module_code === b.dataset.c); if (m) m.enabled = nv;
+      b.setAttribute('aria-checked', nv);
+    }catch(err){ toast(traduire(err.message)); }
+  });
+}
+
+let invite = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); invite = e; const b = $('#b-inst'); if (b) b.style.display = 'block'; });
+function tabCompte(e){
+  const m = S.me || {};
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const installee = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  e.innerHTML = `<h1>Mon compte</h1>
+    <div class="carte" style="margin-top:16px">
+      <div class="ligne-info"><span>E-mail</span><span>${esc(S.session.user.email)}</span></div>
+      <div class="ligne-info"><span>Rôle</span><span>${esc(ROLES[S.profile.role])}</span></div>
+      <div class="ligne-info"><span>Entreprise</span><span>${esc(S.company.name)}</span></div>
+    </div>
+    <h2>Mes informations</h2>
+    <form class="form carte" id="f-me">
+      <label for="m-nom" style="margin-top:0">Nom complet</label><input id="m-nom" value="${esc(S.profile.full_name || '')}" autocomplete="name">
+      <label for="m-poste">Poste</label><input id="m-poste" value="${esc(m.job_title || '')}">
+      <label for="m-tel">Téléphone</label><input id="m-tel" type="tel" value="${esc(m.phone || '')}" autocomplete="tel">
+      <label for="m-adr">Adresse</label><input id="m-adr" value="${esc(m.address || '')}" autocomplete="street-address">
+      <label for="m-nais">Date de naissance</label><input id="m-nais" type="date" value="${esc(m.birth_date || '')}">
+      <label for="m-sit">Situation familiale</label>
+      <select id="m-sit"><option value="">Non renseignée</option>${SITUATIONS.map(s => `<option ${m.marital_status === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
+      <button class="btn" id="m-ok">Enregistrer</button>
+    </form>
+    <h2>Mes documents</h2>
+    <div class="carte" id="mes-docs" style="padding:4px 12px">Chargement…</div>
+    <button class="btn" id="b-adddoc" style="margin-top:0">Ajouter un document</button>
+    <p class="note">Carte d'identité, passeport, diplômes… Vos documents sont privés : vous et les responsables RH de votre entreprise y avez accès.</p>
+    ${installee ? '' : `<button class="btn clair" id="b-inst" style="display:${invite ? 'block' : 'none'}">Installer l'application</button>
+    <p class="note">${ios ? "Sur iPhone : touchez le bouton Partager de Safari, puis « Sur l'écran d'accueil »." : "Sur Android : menu du navigateur (⋮), puis « Installer l'application » ou « Ajouter à l'écran d'accueil »."}</p>`}
+    <button class="btn clair" id="b-quit">Se déconnecter</button>`;
+  $('#b-quit').onclick = signout;
+  if ($('#b-inst')) $('#b-inst').onclick = async () => { if (invite){ invite.prompt(); invite = null; } };
+  $('#f-me').onsubmit = async ev => {
+    ev.preventDefault(); const b = $('#m-ok'); b.disabled = true;
+    try{
+      await api('/rest/v1/rpc/save_my_info', { method:'POST', body:{
+        p_full_name:$('#m-nom').value, p_phone:$('#m-tel').value, p_address:$('#m-adr').value,
+        p_birth_date:$('#m-nais').value || null, p_marital_status:$('#m-sit').value, p_job_title:$('#m-poste').value } });
+      S.profile.full_name = $('#m-nom').value.trim() || null;
+      await loadMe(); await loadEmployees(); toast('Informations enregistrées'); tabCompte($('#ecran'));
+    }catch(err){ toast(traduire(err.message)); b.disabled = false; }
+  };
+  chargerDocs(S.me && S.me.id, '#mes-docs', true);
+  $('#b-adddoc').onclick = () => formDoc(monEmployeId, id => chargerDocs(id, '#mes-docs', true));
+}
+
+/* ============ Documents personnels ============ */
+const DOC_TYPES = { cni:"Carte d'identité (CNI)", passeport:'Passeport', permis:'Permis de conduire', diplome:'Diplôme', contrat:'Contrat', attestation:'Attestation', reglement:'Règlement intérieur', note:'Note ou modèle', autre:'Autre document' };
+const SITUATIONS = ['Célibataire','Marié(e)','Divorcé(e)','Veuf(ve)','Union libre'];
+const chemin = p => p.split('/').map(encodeURIComponent).join('/');
+
+async function monEmployeId(){
+  if (S.me) return S.me.id;
+  const id = await api('/rest/v1/rpc/ensure_my_employee', { method:'POST', body:{} });
+  await loadMe(); await loadEmployees();
+  return id;
+}
+async function chargerDocs(empId, sel, peutSuppr){
+  const z = $(sel); if (!z) return;
+  if (!empId){ z.innerHTML = '<p class="sous" style="padding:10px 0">Aucun document pour le moment.</p>'; return; }
+  try{
+    const d = await api(`/rest/v1/documents?select=id,kind,name,storage_key,created_at&employee_id=eq.${encodeURIComponent(empId)}&order=created_at.desc`);
+    z.innerHTML = d.length ? d.map(x => `<div class="ligne-info" style="align-items:center">
+        <span style="color:var(--encre)"><strong style="display:block;font-size:14.5px">${esc(x.name)}</strong><small style="color:var(--gris)">${esc(DOC_TYPES[x.kind] || x.kind)}</small></span>
+        <span><button class="petit" data-o="${esc(x.storage_key)}">Ouvrir</button>${peutSuppr ? ` <button class="petit" data-s="${esc(x.id)}" data-k="${esc(x.storage_key)}" style="color:var(--rouge)">Supprimer</button>` : ''}</span></div>`).join('')
+      : '<p class="sous" style="padding:10px 0">Aucun document pour le moment.</p>';
+    z.querySelectorAll('[data-o]').forEach(b => b.onclick = () => ouvrirDoc(b.dataset.o));
+    z.querySelectorAll('[data-s]').forEach(b => b.onclick = async () => {
+      if (!confirm('Supprimer ce document ?')) return;
+      await supprimerDoc(b.dataset.s, b.dataset.k); chargerDocs(empId, sel, peutSuppr);
+    });
+  }catch(err){ z.innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; }
+}
+async function ouvrirDoc(path){
+  const w = window.open('', '_blank');
+  try{
+    const d = await api(`/storage/v1/object/sign/documents/${chemin(path)}`, { method:'POST', body:{ expiresIn:120 } });
+    const url = CFG.url + '/storage/v1' + d.signedURL;
+    if (w) w.location = url; else location.href = url;
+  }catch(err){ if (w) w.close(); toast(traduire(err.message)); }
+}
+async function supprimerDoc(id, path){
+  try{ await api(`/storage/v1/object/documents/${chemin(path)}`, { method:'DELETE' }); }catch{}
+  try{ await api(`/rest/v1/documents?id=eq.${encodeURIComponent(id)}`, { method:'DELETE' }); toast('Document supprimé'); }
+  catch(err){ toast(traduire(err.message)); }
+}
+async function envoyerDoc(empId, kind, label, file){
+  if (file.size > 10 * 1024 * 1024) throw new Error('Fichier trop lourd (10 Mo maximum).');
+  await refreshIfNeeded();
+  const propre = file.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9._-]/g, '_');
+  const path = `${S.profile.company_id}/${empId}/${Date.now()}-${propre}`;
+  const r = await fetch(`${CFG.url}/storage/v1/object/documents/${chemin(path)}`, { method:'POST',
+    headers:{ apikey:CFG.key, Authorization:'Bearer ' + S.session.access_token, 'Content-Type': file.type || 'application/octet-stream', 'x-upsert':'false' }, body:file });
+  if (!r.ok){ let m = "Envoi impossible"; try{ const j = await r.json(); m = j.message || j.error || m; }catch{} throw new Error(m); }
+  try{
+    await api('/rest/v1/documents', { method:'POST', headers:{ Prefer:'return=minimal' },
+      body:{ company_id:S.profile.company_id, employee_id:empId === 'entreprise' ? null : empId, kind, name:label || file.name, storage_key:path } });
+  }catch(err){ try{ await api(`/storage/v1/object/documents/${chemin(path)}`, { method:'DELETE' }); }catch{} throw err; }
+}
+function formDoc(getEmpId, apres){
+  ouvrirFeuille(`<h2 style="margin-top:0">Ajouter un document</h2><form class="form" id="f-doc">
+    <label for="d-type">Type</label><select id="d-type">${Object.entries(DOC_TYPES).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select>
+    <label for="d-nom">Nom (facultatif)</label><input id="d-nom" placeholder="Ex. Passeport">
+    <label for="d-file">Fichier (photo ou PDF, 10 Mo maximum)</label><input id="d-file" type="file" accept="image/*,application/pdf" required>
+    <button class="btn" id="d-ok">Envoyer</button>
+    <button class="btn clair" type="button" id="d-no">Annuler</button></form><div id="d-msg"></div>`);
+  $('#d-no').onclick = fermerFeuille;
+  $('#f-doc').onsubmit = async ev => {
+    ev.preventDefault(); const b = $('#d-ok'); b.disabled = true; b.textContent = 'Envoi en cours…';
+    try{
+      const f = $('#d-file').files[0]; if (!f) throw new Error('Choisissez un fichier.');
+      const id = await getEmpId();
+      await envoyerDoc(id, $('#d-type').value, $('#d-nom').value.trim(), f);
+      fermerFeuille(); toast('Document ajouté'); apres(id);
+    }catch(err){ $('#d-msg').innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; b.disabled = false; b.textContent = 'Envoyer'; }
+  };
+}
+
+/* ============ Import de salariés depuis un PDF (lu par l'IA, vérifié par l'utilisateur) ============ */
+const CHAMPS_IMPORT = [['first_name','Prénom','text'],['last_name','Nom','text'],['matricule','Matricule','text'],['job_title','Poste / rôle','text'],
+  ['department','Service','text'],['hired_on',"Date d'embauche",'date'],['phone','Téléphone','tel'],['email','E-mail','email'],
+  ['birth_date','Date de naissance','date'],['marital_status','Situation familiale','text'],['address','Adresse','text']];
+let IMP = [];
+
+function importPdf(){
+  ouvrirFeuille(`<h2 style="margin-top:0">Importer depuis un PDF</h2>
+    <p class="sous">Choisissez un PDF contenant la liste de vos salariés. L'IA le lit, puis vous vérifiez et corrigez avant d'enregistrer.</p>
+    <form class="form" id="f-imp"><label for="i-file">Fichier PDF (8 Mo maximum)</label>
+      <input id="i-file" type="file" accept="application/pdf" required>
+      <button class="btn" id="i-ok">Analyser avec l'IA</button>
+      <button class="btn clair" type="button" id="i-no">Annuler</button></form>
+    <div id="i-msg"></div>
+    <p class="note">Le contenu du PDF est envoyé au service d'IA uniquement pour être lu. Vérifiez toujours le résultat avant d'enregistrer.</p>`);
+  $('#i-no').onclick = fermerFeuille;
+  $('#f-imp').onsubmit = async ev => {
+    ev.preventDefault();
+    const f = $('#i-file').files[0], b = $('#i-ok'), m = $('#i-msg');
+    if (!f) return;
+    if (f.size > 8 * 1024 * 1024){ m.innerHTML = '<p class="msg">PDF trop lourd (8 Mo maximum).</p>'; return; }
+    b.disabled = true; b.textContent = 'Lecture en cours… (jusqu\'à 1 minute)'; m.innerHTML = '';
+    try{
+      const b64 = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1]); fr.onerror = () => rej(new Error('Lecture du fichier impossible')); fr.readAsDataURL(f); });
+      await refreshIfNeeded();
+      const r = await fetch(`${CFG.url}/functions/v1/import-employees`, { method:'POST',
+        headers:{ apikey:CFG.key, Authorization:'Bearer ' + S.session.access_token, 'Content-Type':'application/json' }, body:JSON.stringify({ pdf_base64:b64 }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error || d.message || ('Erreur ' + r.status));
+      if (!d.salaries || !d.salaries.length){ m.innerHTML = "<p class=\"msg\">Aucun salarié trouvé dans ce PDF. Vous pouvez ajouter les salariés à la main.</p>"; b.disabled = false; b.textContent = "Analyser avec l'IA"; return; }
+      revueImport(d.salaries, d.truncated);
+    }catch(err){ m.innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; b.disabled = false; b.textContent = "Analyser avec l'IA"; }
+  };
+}
+
+let IMP_NOTE = '';
+function revueImport(rows, tronque, note = ''){
+  IMP_NOTE = note;
+  const noms = new Set(S.employees.map(e => norm(`${e.first_name} ${e.last_name}`)));
+  const mats = new Set(S.employees.map(e => e.matricule).filter(Boolean));
+  IMP = rows.map(r => {
+    const nom = norm(`${r.first_name || ''} ${r.last_name || ''}`);
+    const doublon = (r.matricule && mats.has(r.matricule)) || noms.has(nom);
+    if (r.matricule) mats.add(r.matricule); noms.add(nom);
+    return { ...r, doublon, inclure: !doublon, ouvert: false };
+  });
+  dessinerRevue(tronque);
+}
+function nbInclus(){ return IMP.filter(r => r.inclure).length; }
+function majBoutonImport(){ const b = $('#imp-ok'); if (b){ const n = nbInclus(); b.textContent = n ? `Importer ${n} salarié${n > 1 ? 's' : ''}` : 'Aucun salarié sélectionné'; b.disabled = !n; } }
+function dessinerRevue(tronque){
+  ouvrirFeuille(`<h2 style="margin-top:0">${IMP.length} salarié${IMP.length > 1 ? 's' : ''} trouvé${IMP.length > 1 ? 's' : ''}</h2>
+    <p class="sous">Vérifiez les informations lues. Touchez « Modifier » pour corriger une ligne, décochez ceux que vous ne voulez pas importer.</p>
+    ${tronque ? '<p class="msg">Le document est très long : la liste a été coupée. Importez ceux-ci, puis relancez avec la suite du document.</p>' : ''}
+    ${IMP_NOTE}
+    <div id="imp-liste" style="margin-top:12px">${IMP.map((r, i) => `
+      <div class="carte" style="padding:10px 12px;${r.inclure ? '' : 'opacity:.6'}">
+        <div style="display:flex;gap:10px;align-items:center">
+          <input type="checkbox" data-c="${i}" ${r.inclure ? 'checked' : ''} aria-label="Importer" style="width:22px;height:22px;flex:none">
+          <div style="flex:1;min-width:0"><strong>${esc(r.first_name || '?')} ${esc(r.last_name || '?')}</strong>
+            <small style="display:block;color:var(--gris)">${esc([r.job_title, r.matricule, r.hired_on].filter(Boolean).join(' · ') || 'Informations à compléter')}</small>
+            ${r.doublon ? '<small style="color:var(--rouge);font-weight:700">Déjà dans la liste ?</small>' : ''}</div>
+          <button class="petit" data-m="${i}">${r.ouvert ? 'Fermer' : 'Modifier'}</button></div>
+        ${r.ouvert ? `<div class="form" style="margin-top:6px">${CHAMPS_IMPORT.map(([k, l, t]) => `<label for="e${i}-${k}">${l}</label><input id="e${i}-${k}" type="${t}" data-i="${i}" data-k="${k}" value="${esc(r[k] || '')}">`).join('')}</div>` : ''}
+      </div>`).join('')}</div>
+    <div id="imp-msg"></div>
+    <button class="btn" id="imp-ok"></button>
+    <button class="btn clair" id="imp-no">Annuler</button>`);
+  $$('#imp-liste [data-c]').forEach(c => c.onchange = () => { IMP[+c.dataset.c].inclure = c.checked; majBoutonImport(); });
+  $$('#imp-liste [data-m]').forEach(b => b.onclick = () => { IMP[+b.dataset.m].ouvert = !IMP[+b.dataset.m].ouvert; dessinerRevue(tronque); });
+  $$('#imp-liste input[data-k]').forEach(inp => inp.oninput = () => { IMP[+inp.dataset.i][inp.dataset.k] = inp.value; });
+  $('#imp-no').onclick = fermerFeuille;
+  $('#imp-ok').onclick = enregistrerImport;
+  majBoutonImport();
+}
+async function enregistrerImport(){
+  const lignes = IMP.filter(r => r.inclure);
+  const incomplets = IMP.map((r, i) => ({ r, i })).filter(({ r }) => r.inclure && (!(r.first_name || '').trim() || !(r.last_name || '').trim()));
+  if (incomplets.length){
+    incomplets.forEach(({ r }) => r.ouvert = true);
+    dessinerRevue(false); $('#imp-msg').innerHTML = '<p class="msg">Complétez le prénom et le nom des lignes ouvertes.</p>'; return;
+  }
+  const b = $('#imp-ok'); b.disabled = true; b.textContent = 'Enregistrement…';
+  const v = x => (x == null ? '' : String(x)).trim() || null;
+  const charge = lignes.map(r => ({ company_id:S.profile.company_id, first_name:r.first_name.trim(), last_name:r.last_name.trim(),
+    matricule:v(r.matricule), job_title:v(r.job_title), department:v(r.department), phone:v(r.phone), email:v(r.email),
+    hired_on:v(r.hired_on), birth_date:v(r.birth_date), marital_status:v(r.marital_status), address:v(r.address) }));
+  try{
+    for (let i = 0; i < charge.length; i += 100)
+      await api('/rest/v1/employees', { method:'POST', headers:{ Prefer:'return=minimal' }, body:charge.slice(i, i + 100) });
+    await loadEmployees(); fermerFeuille(); toast(`${charge.length} salarié${charge.length > 1 ? 's' : ''} importé${charge.length > 1 ? 's' : ''}`); viewApp($('#root'));
+  }catch(err){ $('#imp-msg').innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; b.disabled = false; majBoutonImport(); }
+}
+
+/* ============ Import depuis Excel / CSV (sans IA, gratuit) ============ */
+const SYNONYMES = [
+  ['hired_on', ['date d embauche','date embauche','embauche','date d entree','date entree','date de recrutement','recrutement','date d arrivee','hire date','date of hire']],
+  ['birth_date', ['date de naissance','naissance','ne le','nee le','birth date','date naissance']],
+  ['full_name', ['nom et prenoms','nom et prenom','noms et prenoms','nom prenoms','nom prenom','nom complet','noms prenoms','employe','salarie','agent','full name','name','identite']],
+  ['first_name', ['prenom','prenoms','first name','firstname','given name']],
+  ['last_name', ['nom','noms','nom de famille','nom famille','last name','lastname','surname','family name']],
+  ['matricule', ['matricule','mat','n matricule','no matricule','numero matricule','numero de matricule','id employe','code employe','code','employee id']],
+  ['job_title', ['poste','fonction','role','emploi','titre','job','metier','profession','intitule du poste','intitule poste','job title','position']],
+  ['department', ['service','departement','direction','division','unite','department']],
+  ['phone', ['telephone','tel','mobile','portable','contact','numero de telephone','phone','cellulaire','telephone portable']],
+  ['email', ['email','e mail','mail','courriel','adresse email','adresse mail','adresse e mail']],
+  ['marital_status', ['situation familiale','situation matrimoniale','statut matrimonial','etat civil','situation de famille']],
+  ['address', ['adresse','domicile','residence','lieu d habitation','adresse postale','adresse physique']]
+];
+const MOIS = { janvier:1, fevrier:2, mars:3, avril:4, mai:5, juin:6, juillet:7, aout:8, septembre:9, octobre:10, novembre:11, decembre:12 };
+const nh = s => norm(String(s ?? '')).replace(/[^a-z0-9]+/g, ' ').trim();
+
+function champDe(entete){
+  const t = nh(entete); if (!t) return null;
+  for (const [champ, liste] of SYNONYMES) if (liste.includes(t)) return champ;
+  if (t.includes('embauche')) return 'hired_on';
+  if (t.includes('naissance')) return 'birth_date';
+  if (t.includes('matricule')) return 'matricule';
+  if (t.includes('mail')) return 'email';
+  if (t.includes('telephone')) return 'phone';
+  if (t.includes('prenom')) return 'first_name';
+  if (t.includes('poste') || t.includes('fonction')) return 'job_title';
+  if (t.includes('service') || t.includes('depart')) return 'department';
+  if (t.includes('situation')) return 'marital_status';
+  if (t.includes('adresse')) return 'address';
+  if (t.split(' ')[0] === 'nom') return 'last_name';
+  return null;
+}
+function separerNom(s, nomEnPremier){
+  const t = String(s).trim().split(/\s+/).filter(Boolean);
+  if (!t.length) return ['', ''];
+  if (t.length === 1) return [t[0], ''];
+  const maj = w => w.length > 1 && w === w.toUpperCase() && w !== w.toLowerCase();
+  const caps = t.filter(maj), autres = t.filter(w => !maj(w));
+  if (caps.length && autres.length) return [autres.join(' '), caps.join(' ')];
+  return nomEnPremier ? [t.slice(1).join(' '), t[0]] : [t[0], t.slice(1).join(' ')];
+}
+function fmtDate(y, mo, d){
+  if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+  const dt = new Date(Date.UTC(y, mo - 1, d));
+  return dt.getUTCMonth() === mo - 1 ? dt.toISOString().slice(0, 10) : null;
+}
+function dateIsoDe(v){
+  if (v == null || v === '') return null;
+  if (typeof v === 'number') return v > 1 && v < 80000 ? new Date(Date.UTC(1899, 11, 30) + Math.round(v) * 86400000).toISOString().slice(0, 10) : null;
+  const s = norm(String(v)).trim(); let m;
+  if ((m = s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/))) return fmtDate(+m[1], +m[2], +m[3]);
+  if ((m = s.match(/^(\d{1,2})[-\/. ](\d{1,2})[-\/. ](\d{2,4})$/))){ let a = +m[3]; if (a < 100) a += a < 30 ? 2000 : 1900; return fmtDate(a, +m[2], +m[1]); }
+  if ((m = s.match(/^(\d{1,2})\s+([a-z]+)\.?\s+(\d{4})$/)) && MOIS[m[2]]) return fmtDate(+m[3], MOIS[m[2]], +m[1]);
+  return null;
+}
+function lireTexte(buf){
+  let t; try{ t = new TextDecoder('utf-8', { fatal:true }).decode(buf); }catch{ t = new TextDecoder('windows-1252').decode(buf); }
+  return t.replace(/^\uFEFF/, '');
+}
+function parserCsv(txt){
+  txt = txt.replace(/^sep=.\r?\n/i, '');
+  const premiere = txt.split(/\r?\n/).find(l => l.trim()) || '';
+  const sep = [';', '\t', ','].map(c => [c, premiere.split(c).length]).sort((a, b) => b[1] - a[1])[0][0];
+  const rows = []; let ligne = [], cell = '', q = false;
+  for (let i = 0; i < txt.length; i++){
+    const c = txt[i];
+    if (q){ if (c === '"'){ if (txt[i + 1] === '"'){ cell += '"'; i++; } else q = false; } else cell += c; }
+    else if (c === '"') q = true;
+    else if (c === sep){ ligne.push(cell); cell = ''; }
+    else if (c === '\n' || c === '\r'){ if (c === '\r' && txt[i + 1] === '\n') i++; ligne.push(cell); cell = ''; rows.push(ligne); ligne = []; }
+    else cell += c;
+  }
+  if (cell !== '' || ligne.length){ ligne.push(cell); rows.push(ligne); }
+  return rows;
+}
+function tableauVersSalaries(tab){
+  tab = tab.filter(l => l.some(c => String(c ?? '').trim() !== ''));
+  if (tab.length < 2) throw new Error("Le fichier doit contenir une ligne de titres, puis les salariés.");
+  const idx = {}, reconnus = [], ignores = [];
+  tab[0].forEach((e, i) => {
+    const c = champDe(e), nom = String(e ?? '').trim();
+    if (c && idx[c] === undefined){ idx[c] = i; reconnus.push(nom); } else if (nom) ignores.push(nom);
+  });
+  if (idx.full_name === undefined && idx.first_name === undefined && idx.last_name === undefined)
+    throw new Error("Colonne du nom introuvable. Utilisez le modèle (bouton « Télécharger le modèle »).");
+  const get = (l, k) => idx[k] === undefined ? null : l[idx[k]];
+  const txt = v => { if (v == null) return null; const s = String(v).trim(); return s || null; };
+  const rows = tab.slice(1, 2001).map(l => {
+    let prenom = txt(get(l, 'first_name')), nom = txt(get(l, 'last_name'));
+    if (idx.full_name !== undefined && !(prenom && nom)){
+      const [p, n] = separerNom(txt(get(l, 'full_name')) || '', nh(tab[0][idx.full_name]).startsWith('nom'));
+      prenom = prenom || p || null; nom = nom || n || null;
+    }
+    return { first_name:prenom, last_name:nom, matricule:txt(get(l, 'matricule')), job_title:txt(get(l, 'job_title')), department:txt(get(l, 'department')),
+      phone:txt(get(l, 'phone')), email:txt(get(l, 'email')), hired_on:dateIsoDe(get(l, 'hired_on')), birth_date:dateIsoDe(get(l, 'birth_date')),
+      marital_status:txt(get(l, 'marital_status')), address:txt(get(l, 'address')) };
+  }).filter(r => r.first_name || r.last_name);
+  return { rows, reconnus, ignores, tronque: tab.length - 1 > 2000 };
+}
+function chargerXlsx(){
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload = () => res(window.XLSX);
+    s.onerror = () => rej(new Error("Impossible de charger le lecteur Excel. Enregistrez votre fichier au format CSV et réessayez."));
+    document.head.appendChild(s);
+  });
+}
+function telechargerModele(){
+  const csv = '\uFEFF' + ['Matricule','Nom','Prénoms','Poste','Service',"Date d'embauche",'Téléphone','E-mail','Date de naissance','Situation familiale','Adresse'].join(';') + '\n'
+    + ['M-0001','KONE','Awa','Comptable','Finance','14/03/2019','+225 07 00 00 00 00','awa@exemple.com','12/05/1990','Mariée','Abidjan'].join(';') + '\n';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8' })); a.download = 'modele-salaries.csv';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function importTableur(){
+  ouvrirFeuille(`<h2 style="margin-top:0">Importer depuis Excel ou CSV</h2>
+    <p class="sous">La première ligne du fichier doit contenir les titres des colonnes (Nom, Prénoms, Matricule, Poste, Service, Date d'embauche…). L'application reconnaît les colonnes toute seule.</p>
+    <button class="btn clair" type="button" id="t-modele" style="margin-top:12px">Télécharger le modèle</button>
+    <form class="form" id="f-tab"><label for="t-file">Fichier (.csv ou .xlsx, 5 Mo maximum)</label>
+      <input id="t-file" type="file" accept=".csv,.xlsx,.xls,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
+      <button class="btn" id="t-ok">Lire le fichier</button>
+      <button class="btn clair" type="button" id="t-no">Annuler</button></form><div id="t-msg"></div>`);
+  $('#t-no').onclick = fermerFeuille; $('#t-modele').onclick = telechargerModele;
+  $('#f-tab').onsubmit = async ev => {
+    ev.preventDefault();
+    const f = $('#t-file').files[0], b = $('#t-ok'), m = $('#t-msg'); if (!f) return;
+    if (f.size > 5 * 1024 * 1024){ m.innerHTML = '<p class="msg">Fichier trop lourd (5 Mo maximum).</p>'; return; }
+    b.disabled = true; b.textContent = 'Lecture…'; m.innerHTML = '';
+    try{
+      const buf = await f.arrayBuffer(); let tab;
+      if (/\.csv$|\.txt$/i.test(f.name) || f.type === 'text/csv') tab = parserCsv(lireTexte(buf));
+      else { const X = await chargerXlsx(); const wb = X.read(buf, { type:'array' }); tab = X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header:1, raw:true, defval:'' }); }
+      const r = tableauVersSalaries(tab);
+      const note = `<p class="note" style="margin-top:0">Colonnes reconnues : ${esc(r.reconnus.join(', '))}.${r.ignores.length ? ' Ignorées : ' + esc(r.ignores.join(', ')) + '.' : ''}</p>`;
+      revueImport(r.rows, r.tronque, note);
+    }catch(err){ m.innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; b.disabled = false; b.textContent = 'Lire le fichier'; }
+  };
+}
+
+/* ============ Présence ============ */
+const auj = () => new Date().toLocaleDateString('en-CA');
+const hhmm = iso => iso ? new Date(iso).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' }) : '—';
+const jourFr = d => new Date(d + 'T00:00:00').toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
+const voitEquipe = () => RH.includes(S.profile.role) || S.profile.role === 'manager';
+const STATUTS = { present:['Présent','s-ok'], late:['En retard','s-att'], absent:['Absent','s-ko'], leave:['En congé','s-nd'] };
+const puceStatut = s => { const [t, c] = STATUTS[s] || ['Non pointé', 's-nd']; return `<span class="chip-s ${c}">${t}</span>`; };
+
+async function pointer(sens){
+  const id = await monEmployeId(), now = new Date(), jour = auj();
+  if (sens === 'in'){
+    const debut = (S.company.work_start || '08:00').slice(0, 5);
+    const hm = now.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+    await api('/rest/v1/attendance', { method:'POST', headers:{ Prefer:'return=minimal' },
+      body:{ company_id:S.profile.company_id, employee_id:id, day:jour, check_in:now.toISOString(), status: hm > debut ? 'late' : 'present' } });
+  } else {
+    await api(`/rest/v1/attendance?employee_id=eq.${encodeURIComponent(id)}&day=eq.${jour}`, { method:'PATCH', headers:{ Prefer:'return=minimal' }, body:{ check_out:now.toISOString() } });
+  }
+}
+async function tabPresence(e){
+  e.innerHTML = '<h1>Présence</h1><p class="sous">Chargement…</p>';
+  const jour = auj();
+  try{
+    const [pres, conges] = await Promise.all([
+      api(`/rest/v1/attendance?select=id,employee_id,check_in,check_out,status&day=eq.${jour}`),
+      voitEquipe() ? api(`/rest/v1/leave_requests?select=employee_id&status=eq.approved&starts_on=lte.${jour}&ends_on=gte.${jour}`) : Promise.resolve([])
+    ]);
+    const moi = S.me ? pres.find(p => p.employee_id === S.me.id) : null;
+    const enConge = new Set(conges.map(c => c.employee_id));
+    const etat = emp => { const p = pres.find(x => x.employee_id === emp.id); return p ? p.status : (enConge.has(emp.id) ? 'leave' : null); };
+    let bloc;
+    if (!moi) bloc = `<p class="sous" style="margin:0 0 10px">Vous n'avez pas encore pointé aujourd'hui.</p><button class="btn" id="p-in" style="margin-top:0">Pointer mon arrivée</button>`;
+    else if (!moi.check_out) bloc = `<p class="sous" style="margin:0 0 10px">Arrivée à ${hhmm(moi.check_in)} ${puceStatut(moi.status)}</p><button class="btn ambre" id="p-out" style="margin-top:0">Pointer mon départ</button>`;
+    else bloc = `<p class="sous" style="margin:0">Journée terminée : arrivée ${hhmm(moi.check_in)}, départ ${hhmm(moi.check_out)}.</p>`;
+    let equipe = '';
+    if (voitEquipe()){
+      const nb = k => S.employees.filter(x => etat(x) === k).length;
+      const non = S.employees.filter(x => !etat(x)).length;
+      equipe = `<h2>Équipe aujourd'hui</h2>
+        <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr));margin-top:0">
+          <div class="kpi"><small>Présents</small><b>${nb('present') + nb('late')}</b></div><div class="kpi"><small>En retard</small><b>${nb('late')}</b></div>
+          <div class="kpi"><small>En congé</small><b>${nb('leave')}</b></div><div class="kpi"><small>Non pointés</small><b>${non}</b></div></div>
+        <div style="margin-top:12px">${S.employees.length ? S.employees.map(x => { const p = pres.find(q => q.employee_id === x.id);
+          return `<button class="sal" data-e="${esc(x.id)}" ${RH.includes(S.profile.role) ? '' : 'disabled'}><div class="avatar">${esc(ini(x.first_name, x.last_name))}</div>
+            <div><strong>${esc(x.first_name)} ${esc(x.last_name)}</strong><small>${p ? 'Arrivée ' + hhmm(p.check_in) + (p.check_out ? ' · Départ ' + hhmm(p.check_out) : '') : ' '}</small></div>
+            <span style="margin-left:auto">${puceStatut(etat(x))}</span></button>`; }).join('') : '<p class="sous">Ajoutez d\'abord des salariés.</p>'}</div>
+        ${RH.includes(S.profile.role) ? '<p class="note">Touchez un salarié pour corriger son statut du jour.</p>' : ''}`;
+    }
+    const reglage = ['admin', 'drh'].includes(S.profile.role) ? `<h2>Réglage</h2><div class="carte form"><label for="p-debut" style="margin-top:0">Heure d'arrivée officielle (au-delà : retard)</label>
+      <input id="p-debut" type="time" value="${esc((S.company.work_start || '08:00').slice(0, 5))}"><button class="btn clair" id="p-save">Enregistrer l'heure</button></div>` : '';
+    e.innerHTML = `<h1>Présence</h1><p class="sous">${new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' })}</p>
+      <div class="carte" style="margin-top:16px"><strong style="display:block;margin-bottom:8px">Mon pointage</strong>${bloc}</div>${equipe}${reglage}`;
+    const go = sens => async () => { try{ await pointer(sens); toast(sens === 'in' ? 'Arrivée enregistrée' : 'Départ enregistré'); tabPresence(e); }catch(err){ toast(traduire(err.message)); } };
+    if ($('#p-in')) $('#p-in').onclick = go('in');
+    if ($('#p-out')) $('#p-out').onclick = go('out');
+    e.querySelectorAll('.sal[data-e]').forEach(b => b.onclick = () => statutJour(b.dataset.e, jour, () => tabPresence(e)));
+    if ($('#p-save')) $('#p-save').onclick = async () => {
+      try{ const v = $('#p-debut').value; await api(`/rest/v1/companies?id=eq.${S.profile.company_id}`, { method:'PATCH', headers:{ Prefer:'return=minimal' }, body:{ work_start:v } });
+        S.company.work_start = v + ':00'; toast('Heure enregistrée'); }catch(err){ toast(traduire(err.message)); } };
+  }catch(err){ e.innerHTML = `<h1>Présence</h1><p class="msg">${esc(traduire(err.message))}</p>`; }
+}
+function statutJour(empId, jour, apres){
+  const x = S.employees.find(s => s.id === empId); if (!x) return;
+  ouvrirFeuille(`<h2 style="margin-top:0">${esc(x.first_name)} ${esc(x.last_name)}</h2><p class="sous">Statut du jour</p>
+    ${Object.entries(STATUTS).map(([k, [t]]) => `<button class="btn clair" data-s="${k}" style="margin-top:10px">${t}</button>`).join('')}
+    <button class="btn clair" id="sj-no" style="margin-top:10px">Annuler</button>`);
+  $('#sj-no').onclick = fermerFeuille;
+  $$('#feuille [data-s]').forEach(b => b.onclick = async () => {
+    try{ await api('/rest/v1/attendance?on_conflict=employee_id,day', { method:'POST', headers:{ Prefer:'resolution=merge-duplicates,return=minimal' },
+      body:{ company_id:S.profile.company_id, employee_id:empId, day:jour, status:b.dataset.s } });
+      fermerFeuille(); toast('Statut enregistré'); apres(); }catch(err){ toast(traduire(err.message)); }
+  });
+}
+
+/* ============ Congés ============ */
+const STATUTS_C = { pending:['En attente','s-att'], approved:['Accepté','s-ok'], refused:['Refusé','s-ko'] };
+const puceC = s => { const [t, c] = STATUTS_C[s] || [s, 's-nd']; return `<span class="chip-s ${c}">${t}</span>`; };
+const nomEmp = d => d.employees ? `${d.employees.first_name} ${d.employees.last_name}` : 'Salarié';
+async function tabConges(e){
+  e.innerHTML = '<h1>Congés</h1><p class="sous">Chargement…</p>';
+  try{
+    const [types, dem] = await Promise.all([
+      api(`/rest/v1/leave_types?select=id,label,days_per_year,paid&company_id=eq.${S.profile.company_id}&order=label.asc`),
+      api('/rest/v1/leave_requests?select=id,employee_id,starts_on,ends_on,days,status,reason,employees(first_name,last_name),leave_types(label)&order=starts_on.desc&limit=200')
+    ]);
+    const mesId = S.me && S.me.id, equipe = voitEquipe();
+    const ligne = d => `<div class="carte" style="padding:12px 14px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+      <div><strong>${esc(equipe ? nomEmp(d) : (d.leave_types ? d.leave_types.label : 'Congé'))}</strong>
+      <small style="display:block;color:var(--gris)">${equipe ? esc(d.leave_types ? d.leave_types.label : 'Congé') + ' · ' : ''}${jourFr(d.starts_on)} au ${jourFr(d.ends_on)} · ${d.days} jour${d.days > 1 ? 's' : ''}</small>
+      ${d.reason ? `<small style="display:block;color:var(--gris)">${esc(d.reason)}</small>` : ''}</div>${puceC(d.status)}</div>`;
+    const attente = dem.filter(d => d.status === 'pending' && d.employee_id !== mesId);
+    const miens = dem.filter(d => d.employee_id === mesId);
+    const aVenir = dem.filter(d => d.status === 'approved' && d.ends_on >= auj());
+    const senior = RH_SENIOR.includes(S.profile.role);
+    e.innerHTML = `<h1>Congés</h1><p class="sous">Demandes, validation et types de congés</p>
+      <button class="btn" id="c-new" style="margin-top:14px">Demander un congé</button>
+      ${equipe ? `<h2>À valider (${attente.length})</h2>${attente.length ? attente.map(d => `<div>${ligne(d)}<div class="actions" style="display:flex;gap:8px;margin:-4px 0 12px">
+        <button class="btn" data-ok="${esc(d.id)}" style="margin:0;padding:11px">Accepter</button><button class="btn rouge" data-ko="${esc(d.id)}" style="margin:0;padding:11px">Refuser</button></div></div>`).join('') : '<p class="sous">Aucune demande en attente.</p>'}` : ''}
+      <h2>Mes demandes</h2>${miens.length ? miens.map(ligne).join('') : '<p class="sous">Aucune demande pour le moment.</p>'}
+      ${equipe ? `<h2>Congés à venir ou en cours</h2>${aVenir.length ? aVenir.map(ligne).join('') : '<p class="sous">Aucun congé accepté à venir.</p>'}` : ''}
+      ${senior ? `<h2>Types de congés</h2><div class="carte" style="padding:4px 14px">${types.map(t => `<div class="ligne-info" style="align-items:center"><span style="color:var(--encre)"><strong style="display:block;font-size:14.5px">${esc(t.label)}</strong>
+        <small style="color:var(--gris)">${t.paid ? 'Payé' : 'Non payé'}${t.days_per_year != null ? ' · ' + t.days_per_year + ' jours par an' : ''}</small></span>
+        <button class="petit" data-del="${esc(t.id)}" style="color:var(--rouge)">Supprimer</button></div>`).join('') || '<p class="sous" style="padding:10px 0">Aucun type de congé.</p>'}</div>
+        <button class="btn clair" id="c-type" style="margin-top:0">Ajouter un type de congé</button>` : ''}
+      <p class="note">Les jours sont comptés en jours calendaires, du premier au dernier jour inclus. Les règles légales de chaque pays seront ajoutées après vérification des textes officiels.</p>`;
+    $('#c-new').onclick = () => formConge(types, () => tabConges(e));
+    e.querySelectorAll('[data-ok],[data-ko]').forEach(b => b.onclick = async () => {
+      const ok = b.hasAttribute('data-ok'), id = b.dataset.ok || b.dataset.ko; b.disabled = true;
+      try{ await api(`/rest/v1/leave_requests?id=eq.${encodeURIComponent(id)}`, { method:'PATCH', headers:{ Prefer:'return=minimal' },
+        body:{ status: ok ? 'approved' : 'refused', decided_by:S.profile.id, decided_at:new Date().toISOString() } });
+        toast(ok ? 'Congé accepté' : 'Congé refusé'); tabConges(e); }catch(err){ toast(traduire(err.message)); b.disabled = false; }
+    });
+    if ($('#c-type')) $('#c-type').onclick = () => formTypeConge(() => tabConges(e));
+    e.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+      if (!confirm('Supprimer ce type de congé ?')) return;
+      try{ await api(`/rest/v1/leave_types?id=eq.${encodeURIComponent(b.dataset.del)}`, { method:'DELETE' }); toast('Type supprimé'); tabConges(e); }
+      catch(err){ toast(traduire(err.message)); }
+    });
+  }catch(err){ e.innerHTML = `<h1>Congés</h1><p class="msg">${esc(traduire(err.message))}</p>`; }
+}
+function formConge(types, apres){
+  if (!types.length){ toast("Aucun type de congé : un responsable RH doit en créer."); return; }
+  ouvrirFeuille(`<h2 style="margin-top:0">Demander un congé</h2><form class="form" id="f-conge">
+    <label for="c-type-s">Type</label><select id="c-type-s">${types.map(t => `<option value="${t.id}">${esc(t.label)}</option>`).join('')}</select>
+    <label for="c-du">Du</label><input id="c-du" type="date" required min="${auj()}">
+    <label for="c-au">Au (inclus)</label><input id="c-au" type="date" required min="${auj()}">
+    <label for="c-mot">Motif (facultatif)</label><input id="c-mot">
+    <button class="btn" id="c-ok">Envoyer la demande</button><button class="btn clair" type="button" id="c-no">Annuler</button></form><div id="c-msg"></div>`);
+  $('#c-no').onclick = fermerFeuille;
+  $('#f-conge').onsubmit = async ev => {
+    ev.preventDefault(); const du = $('#c-du').value, au = $('#c-au').value, b = $('#c-ok');
+    if (au < du){ $('#c-msg').innerHTML = '<p class="msg">La date de fin doit être après la date de début.</p>'; return; }
+    const jours = Math.round((new Date(au) - new Date(du)) / 86400000) + 1;
+    b.disabled = true;
+    try{
+      const id = await monEmployeId();
+      await api('/rest/v1/leave_requests', { method:'POST', headers:{ Prefer:'return=minimal' }, body:{ company_id:S.profile.company_id, employee_id:id,
+        leave_type_id:+$('#c-type-s').value, starts_on:du, ends_on:au, days:jours, reason:$('#c-mot').value.trim() || null } });
+      fermerFeuille(); toast('Demande envoyée'); apres();
+    }catch(err){ $('#c-msg').innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; b.disabled = false; }
+  };
+}
+function formTypeConge(apres){
+  ouvrirFeuille(`<h2 style="margin-top:0">Nouveau type de congé</h2><form class="form" id="f-tc">
+    <label for="tc-n">Nom</label><input id="tc-n" required placeholder="Ex. Congé de maternité">
+    <label for="tc-j">Jours par an (facultatif)</label><input id="tc-j" type="number" min="0" step="0.5">
+    <label for="tc-p">Payé ?</label><select id="tc-p"><option value="1">Oui</option><option value="0">Non</option></select>
+    <button class="btn" id="tc-ok">Ajouter</button><button class="btn clair" type="button" id="tc-no">Annuler</button></form><div id="tc-msg"></div>`);
+  $('#tc-no').onclick = fermerFeuille;
+  $('#f-tc').onsubmit = async ev => {
+    ev.preventDefault(); const n = $('#tc-n').value.trim(), j = $('#tc-j').value;
+    try{ await api('/rest/v1/leave_types', { method:'POST', headers:{ Prefer:'return=minimal' }, body:{ company_id:S.profile.company_id,
+      code:norm(n).replace(/[^a-z0-9]+/g, '_').slice(0, 40) || 'autre', label:n, days_per_year: j === '' ? null : +j, paid:$('#tc-p').value === '1' } });
+      fermerFeuille(); toast('Type ajouté'); apres(); }catch(err){ $('#tc-msg').innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; }
+  };
+}
+
+/* ============ Menu « Plus » (téléphone) ============ */
+const DESC_ONGLETS = { paie:'Salaires, règles et bulletins', recrutement:'Offres, candidats, score', carriere:'Compétences et évaluations', formation:'Plan de formation', gpec:'Emplois et compétences de demain', communication:'Annonces et notes de service', documents:'Documents de l\'entreprise', rapports:'Chiffres et exports', modules:'Activer ou non les modules', compte:'Mes informations et mes documents' };
+function tabPlus(e){
+  const items = TABS.filter(([k, , x]) => x && ongletVisible(k));
+  e.innerHTML = `<h1>Plus</h1><p class="sous">Tous les modules</p><div style="margin-top:14px">${items.map(([k, l]) => `<button class="sal" data-g="${k}">
+    <div class="avatar" style="border-radius:12px"><svg viewBox="0 0 24 24" width="22" height="22" style="stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round">${ICONES[k]}</svg></div>
+    <div><strong>${l}</strong><small>${DESC_ONGLETS[k] || ''}</small></div></button>`).join('')}</div>`;
+  e.querySelectorAll('[data-g]').forEach(b => b.onclick = () => { S.tab = b.dataset.g; viewApp($('#root')); });
+}
+
+/* ============ Carrière ============ */
+const estRH = () => RH.includes(S.profile.role);
+const NIVEAUX = ['Aucun', '1 · Notions', '2 · Débutant', '3 · Confirmé', '4 · Avancé', '5 · Expert'];
+function tabCarriere(e){
+  e.innerHTML = `<h1>Carrière</h1><p class="sous">Compétences, évaluations et formations de chaque salarié</p>
+    <input class="recherche" id="ca-rech" type="search" placeholder="Chercher un salarié" aria-label="Chercher un salarié"><div id="ca-liste"></div>`;
+  const dessiner = () => {
+    const q = norm($('#ca-rech').value);
+    const res = S.employees.filter(x => norm(`${x.first_name} ${x.last_name} ${x.job_title || ''}`).includes(q));
+    $('#ca-liste').innerHTML = res.length ? res.map(x => `<button class="sal" data-id="${esc(x.id)}"><div class="avatar">${esc(ini(x.first_name, x.last_name))}</div>
+      <div><strong>${esc(x.first_name)} ${esc(x.last_name)}</strong><small>${esc(x.job_title || 'Poste à préciser')}</small></div></button>`).join('')
+      : '<p class="sous">Aucun salarié. Ajoutez-en dans l\'onglet Salariés.</p>';
+    $$('#ca-liste .sal').forEach(b => b.onclick = () => ficheCarriere(b.dataset.id));
+  };
+  $('#ca-rech').oninput = dessiner; dessiner();
+}
+async function ficheCarriere(empId){
+  ouvrirFeuille('<p class="sous">Chargement…</p>');
+  try{
+    const r0 = await api(`/rest/v1/employees?select=id,first_name,last_name,job_title,job_profile_id&id=eq.${encodeURIComponent(empId)}`);
+    const emp = r0[0]; if (!emp) throw new Error('Salarié introuvable');
+    const [acq, evals, forms, profils, catalogue, req] = await Promise.all([
+      api(`/rest/v1/employee_skills?select=skill_id,level&employee_id=eq.${encodeURIComponent(empId)}`),
+      api(`/rest/v1/reviews?select=id,period,score,comment&employee_id=eq.${encodeURIComponent(empId)}&order=period.desc`),
+      api(`/rest/v1/trainings?select=id,title,planned_on,done_on&employee_id=eq.${encodeURIComponent(empId)}&order=planned_on.desc`),
+      api('/rest/v1/job_profiles?select=id,title&order=title.asc'),
+      api('/rest/v1/skills?select=id,name&order=name.asc'),
+      emp.job_profile_id ? api(`/rest/v1/job_profile_skills?select=skill_id,required_level&job_profile_id=eq.${emp.job_profile_id}`) : Promise.resolve([])
+    ]);
+    dessinerCarriere(emp, acq, evals, forms, profils, catalogue, req);
+  }catch(err){ ouvrirFeuille(`<p class="msg">${esc(traduire(err.message))}</p><button class="btn clair" id="fc-x">Fermer</button>`); $('#fc-x').onclick = fermerFeuille; }
+}
+function dessinerCarriere(emp, acq, evals, forms, profils, catalogue, req){
+  const hr = estRH();
+  const niv = id => (acq.find(a => a.skill_id === id) || {}).level || 0;
+  const requis = id => (req.find(r => r.skill_id === id) || {}).required_level || 0;
+  const ids = [...new Set([...req.map(r => r.skill_id), ...acq.map(a => a.skill_id)])];
+  const nom = id => (catalogue.find(c => c.id === id) || {}).name || '?';
+  const dispo = catalogue.filter(c => !ids.includes(c.id));
+  ouvrirFeuille(`<div style="display:flex;gap:14px;align-items:center;margin-bottom:6px"><div class="avatar" style="width:52px;height:52px;font-size:18px">${esc(ini(emp.first_name, emp.last_name))}</div>
+    <div><strong style="font-size:18px">${esc(emp.first_name)} ${esc(emp.last_name)}</strong><br><small style="color:var(--gris)">${esc(emp.job_title || 'Poste à préciser')}</small></div></div>
+    <div class="form"><label for="fc-poste">Poste du référentiel</label>
+      ${hr ? `<select id="fc-poste"><option value="">Aucun</option>${profils.map(p => `<option value="${p.id}" ${p.id === emp.job_profile_id ? 'selected' : ''}>${esc(p.title)}</option>`).join('')}</select>`
+        : `<p style="font-weight:650">${esc((profils.find(p => p.id === emp.job_profile_id) || {}).title || 'Non défini')}</p>`}</div>
+    <h2>Compétences</h2>
+    ${ids.length ? ids.map(id => { const n = niv(id), r = requis(id);
+      return `<div class="ligne-info" style="align-items:center"><span style="color:var(--encre)"><strong style="font-size:14.5px">${esc(nom(id))}</strong>${r ? `<small style="display:block;color:${n < r ? 'var(--rouge)' : 'var(--vert-ok)'}">Requis : ${r}/5${n < r ? ' · écart ' + (r - n) : ' · atteint'}</small>` : ''}</span>
+      ${hr ? `<select class="niv" data-sk="${id}">${NIVEAUX.map((t, i) => `<option value="${i}" ${i === n ? 'selected' : ''}>${t}</option>`).join('')}</select>` : `<span>${NIVEAUX[n]}</span>`}</div>`; }).join('')
+      : '<p class="sous">Aucune compétence renseignée.</p>'}
+    ${hr && dispo.length ? `<div style="display:flex;gap:8px;margin-top:10px"><select class="niv" id="fc-add" style="flex:1"><option value="">Ajouter une compétence…</option>${dispo.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></div>` : ''}
+    ${hr && !catalogue.length ? '<p class="note">Créez d\'abord des compétences dans l\'onglet GPEC (Nouveau poste).</p>' : ''}
+    <h2>Évaluations</h2>
+    ${evals.length ? evals.map(v => `<div class="ligne-info"><span style="color:var(--encre)"><strong style="font-size:14.5px">${esc(v.period)}</strong>${v.comment ? `<small style="display:block;color:var(--gris)">${esc(v.comment)}</small>` : ''}</span><span>${v.score != null ? v.score + ' / 5' : '—'}</span></div>`).join('') : '<p class="sous">Aucune évaluation.</p>'}
+    ${hr ? '<button class="btn clair" id="fc-ev" style="margin-top:10px">Ajouter une évaluation</button>' : ''}
+    <h2>Formations</h2>
+    ${forms.length ? forms.map(f => `<div class="ligne-info"><span style="color:var(--encre)">${esc(f.title)}</span><span>${f.done_on ? 'Réalisée' : (f.planned_on ? jourFr(f.planned_on) : 'À planifier')}</span></div>`).join('') : '<p class="sous">Aucune formation.</p>'}
+    <button class="btn clair" id="fc-x" style="margin-top:14px">Fermer</button>`);
+  $('#fc-x').onclick = fermerFeuille;
+  const rouvrir = () => ficheCarriere(emp.id);
+  if ($('#fc-poste')) $('#fc-poste').onchange = async ev => {
+    try{ await api(`/rest/v1/employees?id=eq.${encodeURIComponent(emp.id)}`, { method:'PATCH', headers:{ Prefer:'return=minimal' }, body:{ job_profile_id: ev.target.value || null } }); toast('Poste enregistré'); rouvrir(); }
+    catch(err){ toast(traduire(err.message)); }
+  };
+  const sauverNiveau = async (skillId, level) => {
+    await api('/rest/v1/employee_skills?on_conflict=employee_id,skill_id', { method:'POST', headers:{ Prefer:'resolution=merge-duplicates,return=minimal' }, body:{ employee_id:emp.id, skill_id:skillId, level } });
+  };
+  $$('#feuille select[data-sk]').forEach(s => s.onchange = async () => { try{ await sauverNiveau(+s.dataset.sk, +s.value); toast('Niveau enregistré'); rouvrir(); }catch(err){ toast(traduire(err.message)); } });
+  if ($('#fc-add')) $('#fc-add').onchange = async ev => { if (!ev.target.value) return; try{ await sauverNiveau(+ev.target.value, 1); rouvrir(); }catch(err){ toast(traduire(err.message)); } };
+  if ($('#fc-ev')) $('#fc-ev').onclick = () => formEval(emp.id, rouvrir);
+}
+function formEval(empId, apres){
+  ouvrirFeuille(`<h2 style="margin-top:0">Nouvelle évaluation</h2><form class="form" id="f-ev">
+    <label for="ev-p">Période</label><input id="ev-p" required placeholder="Ex. Annuelle 2026">
+    <label for="ev-s">Note sur 5 (facultatif)</label><input id="ev-s" type="number" min="0" max="5" step="0.1">
+    <label for="ev-c">Commentaire (facultatif)</label><input id="ev-c">
+    <button class="btn" id="ev-ok">Enregistrer</button><button class="btn clair" type="button" id="ev-no">Annuler</button></form><div id="ev-msg"></div>`);
+  $('#ev-no').onclick = apres;
+  $('#f-ev').onsubmit = async ev => {
+    ev.preventDefault(); const s = $('#ev-s').value;
+    try{ await api('/rest/v1/reviews', { method:'POST', headers:{ Prefer:'return=minimal' }, body:{ company_id:S.profile.company_id, employee_id:empId,
+      period:$('#ev-p').value.trim(), score: s === '' ? null : +s, comment:$('#ev-c').value.trim() || null } }); toast('Évaluation ajoutée'); apres(); }
+    catch(err){ $('#ev-msg').innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; }
+  };
+}
+
+/* ============ Formation ============ */
+async function tabFormation(e){
+  e.innerHTML = '<h1>Formation</h1><p class="sous">Chargement…</p>';
+  try{
+    const t = await api('/rest/v1/trainings?select=id,title,planned_on,done_on,employee_id,employees(first_name,last_name),skills(name)&order=planned_on.desc.nullslast&limit=300');
+    const groupes = {};
+    t.forEach(r => { const k = `${r.title}|${r.planned_on || ''}`; (groupes[k] = groupes[k] || { title:r.title, date:r.planned_on, skill:r.skills && r.skills.name, rows:[] }).rows.push(r); });
+    const liste = Object.values(groupes), faite = g => g.rows.every(r => r.done_on);
+    const carte = g => `<div class="carte" style="padding:12px 14px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+      <div><strong>${esc(g.title)}</strong><small style="display:block;color:var(--gris)">${g.date ? jourFr(g.date) : 'Date à fixer'}${g.skill ? ' · ' + esc(g.skill) : ''}</small>
+      <small style="display:block;color:var(--gris)">${estRH() ? g.rows.map(r => r.employees ? esc(r.employees.first_name + ' ' + r.employees.last_name) : 'Salarié').join(', ') : 'Vous'}</small></div>
+      <span class="chip-s ${faite(g) ? 's-ok' : 's-att'}">${faite(g) ? 'Réalisée' : 'Prévue'}</span></div>
+      ${estRH() ? `<div style="display:flex;gap:8px;margin-top:10px">${faite(g) ? '' : `<button class="petit" data-done="${g.rows.map(r => r.id).join(',')}">Marquer réalisée</button>`}<button class="petit" data-del="${g.rows.map(r => r.id).join(',')}" style="color:var(--rouge)">Supprimer</button></div>` : ''}</div>`;
+    const prevues = liste.filter(g => !faite(g)), faites = liste.filter(faite);
+    e.innerHTML = `<h1>Formation</h1><p class="sous">Plan de formation de l'entreprise</p>
+      ${estRH() ? '<button class="btn" id="fo-new" style="margin-top:14px">Planifier une formation</button>' : ''}
+      <h2>Prévues (${prevues.length})</h2>${prevues.length ? prevues.map(carte).join('') : '<p class="sous">Aucune formation prévue.</p>'}
+      <h2>Réalisées (${faites.length})</h2>${faites.length ? faites.map(carte).join('') : '<p class="sous">Aucune formation réalisée.</p>'}`;
+    if ($('#fo-new')) $('#fo-new').onclick = () => formFormation({}, () => tabFormation(e));
+    e.querySelectorAll('[data-done]').forEach(b => b.onclick = async () => {
+      try{ await api(`/rest/v1/trainings?id=in.(${b.dataset.done})`, { method:'PATCH', headers:{ Prefer:'return=minimal' }, body:{ done_on:auj() } }); toast('Formation réalisée'); tabFormation(e); }catch(err){ toast(traduire(err.message)); } });
+    e.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+      if (!confirm('Supprimer cette formation ?')) return;
+      try{ await api(`/rest/v1/trainings?id=in.(${b.dataset.del})`, { method:'DELETE' }); toast('Formation supprimée'); tabFormation(e); }catch(err){ toast(traduire(err.message)); } });
+  }catch(err){ e.innerHTML = `<h1>Formation</h1><p class="msg">${esc(traduire(err.message))}</p>`; }
+}
+async function formFormation(pre, apres){
+  let sk = []; try{ sk = await api('/rest/v1/skills?select=id,name&order=name.asc'); }catch{}
+  const choisis = new Set(pre.emp_ids || []);
+  ouvrirFeuille(`<h2 style="margin-top:0">Planifier une formation</h2><form class="form" id="f-fo">
+    <label for="fo-t">Intitulé</label><input id="fo-t" required value="${esc(pre.titre || '')}" placeholder="Ex. Paie et déclarations sociales">
+    <label for="fo-d">Date prévue (facultatif)</label><input id="fo-d" type="date">
+    <label for="fo-s">Compétence visée (facultatif)</label><select id="fo-s"><option value="">Aucune</option>${sk.map(s => `<option value="${s.id}" ${s.id === pre.skill_id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select>
+    <label>Participants</label>
+    <div style="max-height:200px;overflow-y:auto">${S.employees.map(x => `<label style="display:flex;gap:10px;align-items:center;margin:0;padding:8px 0;color:var(--encre);font-size:15px"><input type="checkbox" data-p="${esc(x.id)}" ${choisis.has(x.id) ? 'checked' : ''} style="width:22px;height:22px;flex:none">${esc(x.first_name)} ${esc(x.last_name)}</label>`).join('') || '<p class="sous">Ajoutez d\'abord des salariés.</p>'}</div>
+    <button class="btn" id="fo-ok">Planifier</button><button class="btn clair" type="button" id="fo-no">Annuler</button></form><div id="fo-msg"></div>`);
+  $('#fo-no').onclick = fermerFeuille;
+  $('#f-fo').onsubmit = async ev => {
+    ev.preventDefault();
+    const ids = $$('#feuille [data-p]').filter(c => c.checked).map(c => c.dataset.p);
+    if (!ids.length){ $('#fo-msg').innerHTML = '<p class="msg">Choisissez au moins un participant.</p>'; return; }
+    try{ await api('/rest/v1/trainings', { method:'POST', headers:{ Prefer:'return=minimal' }, body:ids.map(id => ({ company_id:S.profile.company_id, employee_id:id,
+      title:$('#fo-t').value.trim(), planned_on:$('#fo-d').value || null, skill_id:$('#fo-s').value ? +$('#fo-s').value : null })) });
+      fermerFeuille(); toast('Formation planifiée'); apres(); }catch(err){ $('#fo-msg').innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; }
+  };
+}
+
+/* ============ GPEC ============ */
+const ageDe = d => Math.floor((Date.now() - new Date(d + 'T00:00:00')) / 31557600000);
+async function tabGpec(e){
+  if (!estRH()){ e.innerHTML = '<h1>GPEC</h1><p class="sous">Réservé aux rôles RH.</p>'; return; }
+  e.innerHTML = '<h1>GPEC</h1><p class="sous">Chargement…</p>';
+  try{
+    const [emps, skills, profils, ps, es] = await Promise.all([
+      api('/rest/v1/employees?select=id,first_name,last_name,job_title,department,birth_date,job_profile_id&left_on=is.null&order=last_name.asc'),
+      api('/rest/v1/skills?select=id,name&order=name.asc'),
+      api('/rest/v1/job_profiles?select=id,title&order=title.asc'),
+      api('/rest/v1/job_profile_skills?select=job_profile_id,skill_id,required_level'),
+      api('/rest/v1/employee_skills?select=employee_id,skill_id,level')
+    ]);
+    const nomSk = id => (skills.find(s => s.id === id) || {}).name || '?';
+    const ages = emps.filter(x => x.birth_date).map(x => ({ x, a:ageDe(x.birth_date) }));
+    const moy = ages.length ? Math.round(ages.reduce((s, o) => s + o.a, 0) / ages.length) : null;
+    const tranches = [['Moins de 30 ans', a => a < 30], ['30 à 39 ans', a => a >= 30 && a < 40], ['40 à 49 ans', a => a >= 40 && a < 50], ['50 à 59 ans', a => a >= 50 && a < 60], ['60 ans et plus', a => a >= 60]];
+    const nbT = tranches.map(([, f]) => ages.filter(o => f(o.a)).length), maxT = Math.max(1, ...nbT);
+    const ra = S.company.retirement_age, annee = new Date().getFullYear();
+    const departs = ra ? ages.map(o => ({ x:o.x, an:+o.x.birth_date.slice(0, 4) + ra })).filter(o => o.an <= annee + 5).sort((a, b) => a.an - b.an) : [];
+    const liens = emps.filter(x => x.job_profile_id);
+    const ecarts = liens.map(x => ({ x, lac:ps.filter(p => p.job_profile_id === x.job_profile_id).map(p => ({ skill:p.skill_id,
+      manque:p.required_level - ((es.find(q => q.employee_id === x.id && q.skill_id === p.skill_id) || {}).level || 0) })).filter(g => g.manque > 0) }));
+    const parComp = {};
+    ecarts.forEach(o => o.lac.forEach(g => { (parComp[g.skill] = parComp[g.skill] || []).push(o.x.id); }));
+    const compList = Object.entries(parComp).sort((a, b) => b[1].length - a[1].length);
+    const senior = ['admin', 'drh'].includes(S.profile.role);
+    e.innerHTML = `<h1>GPEC</h1><p class="sous">Gestion prévisionnelle des emplois et des compétences</p>
+      <div class="kpis"><div class="kpi"><small>Effectif</small><b>${emps.length}</b></div><div class="kpi"><small>Âge moyen</small><b>${moy != null ? moy + ' ans' : '—'}</b></div>
+        <div class="kpi"><small>Liés à un poste</small><b>${liens.length}/${emps.length}</b></div></div>
+      <h2>Pyramide des âges</h2><div class="carte">${ages.length ? tranches.map(([t], i) => `<div class="brow"><span>${t}</span><div class="bar"><i style="width:${nbT[i] / maxT * 100}%"></i></div><span>${nbT[i]}</span></div>`).join('')
+        : '<p class="sous">Renseignez les dates de naissance des salariés pour voir la pyramide.</p>'}
+        ${emps.length > ages.length && ages.length ? `<p class="note" style="margin-top:4px">${emps.length - ages.length} salarié(s) sans date de naissance.</p>` : ''}</div>
+      <h2>Départs prévisibles (5 ans)</h2><div class="carte">
+        ${senior ? `<div class="form" style="margin-bottom:8px"><label for="g-ra" style="margin-top:0">Âge de départ à la retraite dans votre entreprise</label><div style="display:flex;gap:8px"><input id="g-ra" type="number" min="40" max="80" value="${ra || ''}" placeholder="Ex. 60"><button class="petit" id="g-ra-ok" style="flex:none">Enregistrer</button></div></div>` : ''}
+        ${ra ? (departs.length ? departs.map(o => `<div class="ligne-info"><span style="color:var(--encre)">${esc(o.x.first_name)} ${esc(o.x.last_name)}</span><span>${o.an <= annee ? 'Âge atteint' : 'en ' + o.an}</span></div>`).join('') : '<p class="sous">Aucun départ prévu sur 5 ans.</p>')
+          : '<p class="sous">Indiquez l\'âge de départ pour calculer les départs. Vérifiez-le dans la loi de votre pays.</p>'}</div>
+      <h2>Postes du référentiel (${profils.length})</h2><div class="carte" style="padding:4px 14px">${profils.map(p => `<div class="ligne-info" style="align-items:center"><span style="color:var(--encre)"><strong style="font-size:14.5px">${esc(p.title)}</strong>
+        <small style="display:block;color:var(--gris)">${ps.filter(q => q.job_profile_id === p.id).map(q => esc(nomSk(q.skill_id)) + ' ' + q.required_level + '/5').join(' · ') || 'Aucune compétence requise'}</small></span>
+        <button class="petit" data-dp="${esc(p.id)}" style="color:var(--rouge)">Supprimer</button></div>`).join('') || '<p class="sous" style="padding:10px 0">Aucun poste défini.</p>'}</div>
+      <button class="btn clair" id="g-new" style="margin-top:0">Nouveau poste</button>
+      <h2>Écarts de compétences</h2>
+      ${compList.length ? `<div class="carte">${compList.map(([sid, lst]) => `<div class="ligne-info" style="align-items:center"><span style="color:var(--encre)"><strong style="font-size:14.5px">${esc(nomSk(+sid))}</strong><small style="display:block;color:var(--gris)">${lst.length} salarié${lst.length > 1 ? 's' : ''} en dessous du niveau requis</small></span>
+        <button class="petit" data-pl="${sid}">Planifier</button></div>`).join('')}</div>`
+        : `<p class="sous">${liens.length ? 'Aucun écart : tous les salariés liés à un poste atteignent le niveau requis.' : 'Liez chaque salarié à un poste (onglet Carrière) pour voir les écarts de compétences.'}</p>`}
+      ${ecarts.filter(o => o.lac.length).length ? `<div class="carte" style="margin-top:10px">${ecarts.filter(o => o.lac.length).map(o => `<button class="sal" data-ec="${esc(o.x.id)}" style="padding:8px 4px;margin:0;background:none"><div><strong>${esc(o.x.first_name)} ${esc(o.x.last_name)}</strong>
+        <small>${o.lac.map(g => esc(nomSk(g.skill)) + ' (−' + g.manque + ')').join(', ')}</small></div></button>`).join('')}</div>` : ''}
+      <p class="note">Niveaux : 1 notions, 2 débutant, 3 confirmé, 4 avancé, 5 expert.</p>`;
+    if ($('#g-ra-ok')) $('#g-ra-ok').onclick = async () => {
+      const v = $('#g-ra').value;
+      try{ await api(`/rest/v1/companies?id=eq.${S.profile.company_id}`, { method:'PATCH', headers:{ Prefer:'return=minimal' }, body:{ retirement_age: v === '' ? null : +v } });
+        S.company.retirement_age = v === '' ? null : +v; toast('Enregistré'); tabGpec(e); }catch(err){ toast(traduire(err.message)); } };
+    $('#g-new').onclick = () => formPoste(skills, () => tabGpec(e));
+    e.querySelectorAll('[data-dp]').forEach(b => b.onclick = async () => {
+      if (!confirm('Supprimer ce poste du référentiel ?')) return;
+      try{ await api(`/rest/v1/job_profiles?id=eq.${encodeURIComponent(b.dataset.dp)}`, { method:'DELETE' }); toast('Poste supprimé'); tabGpec(e); }catch(err){ toast(traduire(err.message)); } });
+    e.querySelectorAll('[data-pl]').forEach(b => b.onclick = () => formFormation({ skill_id:+b.dataset.pl, titre:'Formation : ' + nomSk(+b.dataset.pl), emp_ids:parComp[b.dataset.pl] }, () => { toast('Formation planifiée'); }));
+    e.querySelectorAll('[data-ec]').forEach(b => b.onclick = () => ficheCarriere(b.dataset.ec));
+  }catch(err){ e.innerHTML = `<h1>GPEC</h1><p class="msg">${esc(traduire(err.message))}</p>`; }
+}
+function formPoste(skills, apres){
+  ouvrirFeuille(`<h2 style="margin-top:0">Nouveau poste</h2><form class="form" id="f-po">
+    <label for="po-t">Intitulé du poste</label><input id="po-t" required placeholder="Ex. Comptable">
+    <label>Compétences requises (niveau de 1 à 5)</label>
+    <div style="max-height:200px;overflow-y:auto">${skills.map(s => `<div style="display:flex;gap:10px;align-items:center;padding:6px 0"><input type="checkbox" data-s="${s.id}" style="width:22px;height:22px;flex:none"><span style="flex:1;font-size:15px">${esc(s.name)}</span>
+      <select class="niv" data-l="${s.id}">${[1, 2, 3, 4, 5].map(n => `<option ${n === 3 ? 'selected' : ''}>${n}</option>`).join('')}</select></div>`).join('') || '<p class="sous">Aucune compétence encore : ajoutez-en ci-dessous.</p>'}</div>
+    <label for="po-n">Nouvelles compétences (séparées par des virgules, niveau 3)</label><input id="po-n" placeholder="Ex. Paie, Excel, Management">
+    <button class="btn" id="po-ok">Créer le poste</button><button class="btn clair" type="button" id="po-no">Annuler</button></form><div id="po-msg"></div>`);
+  $('#po-no').onclick = fermerFeuille;
+  $('#f-po').onsubmit = async ev => {
+    ev.preventDefault(); const b = $('#po-ok'); b.disabled = true;
+    try{
+      const lignes = $$('#feuille [data-s]').filter(c => c.checked).map(c => ({ skill_id:+c.dataset.s, required_level:+$(`#feuille [data-l='${c.dataset.s}']`).value }));
+      const existants = skills.map(s => norm(s.name));
+      const nouveaux = [...new Set($('#po-n').value.split(',').map(x => x.trim()).filter(Boolean))].filter(n => !existants.includes(norm(n)));
+      if (nouveaux.length){
+        const crees = await api('/rest/v1/skills', { method:'POST', headers:{ Prefer:'return=representation' }, body:nouveaux.map(n => ({ company_id:S.profile.company_id, name:n })) });
+        crees.forEach(c => lignes.push({ skill_id:c.id, required_level:3 }));
+      }
+      const p = await api('/rest/v1/job_profiles', { method:'POST', headers:{ Prefer:'return=representation' }, body:{ company_id:S.profile.company_id, title:$('#po-t').value.trim() } });
+      if (lignes.length) await api('/rest/v1/job_profile_skills', { method:'POST', headers:{ Prefer:'return=minimal' }, body:lignes.map(l => ({ ...l, job_profile_id:p[0].id })) });
+      fermerFeuille(); toast('Poste créé'); apres();
+    }catch(err){ $('#po-msg').innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; b.disabled = false; }
+  };
+}
+
+/* ============ Communication ============ */
+const TYPES_COM = { annonce:'Annonce', note_service:'Note de service', evenement:'Événement', reunion:'Réunion', rappel:'Rappel' };
+async function tabCommunication(e){
+  e.innerHTML = '<h1>Communication</h1><p class="sous">Chargement…</p>';
+  try{
+    const a = await api('/rest/v1/announcements?select=id,kind,title,body,audience,event_on,created_at,author_id,profiles(full_name)&order=created_at.desc&limit=100');
+    const cible = x => !x || x.type === 'all' ? 'Toute l\'entreprise' : (x.type === 'department' ? 'Service : ' + x.value : 'Message personnel');
+    e.innerHTML = `<h1>Communication</h1><p class="sous">Annonces, notes de service, événements et rappels</p>
+      ${estRH() ? '<button class="btn" id="co-new" style="margin-top:14px">Nouveau message</button>' : ''}
+      <div style="margin-top:14px">${a.length ? a.map(m => `<div class="carte"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+        <strong>${esc(m.title)}</strong><span class="chip-s s-att">${esc(TYPES_COM[m.kind] || m.kind)}</span></div>
+        <p style="margin:8px 0;white-space:pre-wrap;font-size:14.5px;line-height:1.5">${esc(m.body)}</p>
+        ${m.event_on ? `<small style="display:block;font-weight:700;color:var(--foret)">Le ${jourFr(m.event_on)}</small>` : ''}
+        <small style="color:var(--gris)">${esc(cible(m.audience))} · ${jourFr(m.created_at.slice(0, 10))}${m.profiles && m.profiles.full_name ? ' · ' + esc(m.profiles.full_name) : ''}</small>
+        ${estRH() ? `<div style="margin-top:8px"><button class="petit" data-del="${esc(m.id)}" style="color:var(--rouge)">Supprimer</button></div>` : ''}</div>`).join('') : '<p class="sous">Aucun message pour le moment.</p>'}</div>`;
+    if ($('#co-new')) $('#co-new').onclick = () => formMessage(() => tabCommunication(e));
+    e.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+      if (!confirm('Supprimer ce message ?')) return;
+      try{ await api(`/rest/v1/announcements?id=eq.${encodeURIComponent(b.dataset.del)}`, { method:'DELETE' }); toast('Message supprimé'); tabCommunication(e); }catch(err){ toast(traduire(err.message)); } });
+  }catch(err){ e.innerHTML = `<h1>Communication</h1><p class="msg">${esc(traduire(err.message))}</p>`; }
+}
+function formMessage(apres){
+  const services = [...new Set(S.employees.map(x => x.department).filter(Boolean))];
+  ouvrirFeuille(`<h2 style="margin-top:0">Nouveau message</h2><form class="form" id="f-co">
+    <label for="co-k">Type</label><select id="co-k">${Object.entries(TYPES_COM).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select>
+    <label for="co-a">Destinataires</label><select id="co-a"><option value="all">Toute l'entreprise</option>
+      ${services.map(s => `<option value="d:${esc(s)}">Service : ${esc(s)}</option>`).join('')}
+      ${S.employees.map(x => `<option value="e:${esc(x.id)}">${esc(x.first_name)} ${esc(x.last_name)}</option>`).join('')}</select>
+    <label for="co-t">Titre</label><input id="co-t" required>
+    <label for="co-b">Message</label><textarea id="co-b" required style="width:100%;min-height:110px;padding:12px;border-radius:12px;border:1.5px solid var(--ligne);font-size:15px"></textarea>
+    <label for="co-d">Date de l'événement ou de la réunion (facultatif)</label><input id="co-d" type="date">
+    <button class="btn" id="co-ok">Publier</button><button class="btn clair" type="button" id="co-no">Annuler</button></form><div id="co-msg"></div>`);
+  $('#co-no').onclick = fermerFeuille;
+  $('#f-co').onsubmit = async ev => {
+    ev.preventDefault(); const v = $('#co-a').value;
+    const audience = v === 'all' ? { type:'all' } : (v.startsWith('d:') ? { type:'department', value:v.slice(2) } : { type:'employee', value:v.slice(2) });
+    try{ await api('/rest/v1/announcements', { method:'POST', headers:{ Prefer:'return=minimal' }, body:{ company_id:S.profile.company_id, author_id:S.profile.id,
+      kind:$('#co-k').value, audience, title:$('#co-t').value.trim(), body:$('#co-b').value.trim(), event_on:$('#co-d').value || null } });
+      fermerFeuille(); toast('Message publié'); apres(); }catch(err){ $('#co-msg').innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; }
+  };
+}
+
+/* ============ Utilitaires communs ============ */
+const devise = () => { const c = (S.countries.find(x => x.code === S.company.country_code) || {}).currency; return c === 'XOF' || c === 'XAF' ? 'F CFA' : (c || ''); };
+const fmtF = n => Number(n || 0).toLocaleString('fr-FR') + ' ' + devise();
+const moisFr = p => new Date(p.slice(0, 7) + '-01T00:00:00').toLocaleDateString('fr-FR', { month:'long', year:'numeric' });
+function telechargerCsv(nom, lignes){
+  const csv = '\uFEFF' + lignes.map(l => l.map(c => { const s = String(c == null ? '' : c); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(';')).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8' })); a.download = nom;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function imprimerHtml(titre, corps){
+  const w = window.open('', '_blank'); if (!w){ toast('Autorisez les fenêtres pour imprimer.'); return; }
+  w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>${esc(titre)}</title><style>body{font-family:Arial,sans-serif;max-width:720px;margin:24px auto;padding:0 16px;color:#10211B}h1{font-size:20px;margin-bottom:4px}h2{font-size:15px;margin:18px 0 0}table{width:100%;border-collapse:collapse}td{padding:8px 4px;border-bottom:1px solid #ccc}td:last-child{text-align:right;white-space:nowrap}.net{font-size:20px;font-weight:bold;margin-top:18px;display:flex;justify-content:space-between}small{color:#666}</style></head><body>${corps}<script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script></body></html>`);
+  w.document.close();
+}
+
+/* ============ Documents de l'entreprise ============ */
+async function tabDocuments(e){
+  e.innerHTML = '<h1>Documents</h1><p class="sous">Chargement…</p>';
+  try{
+    const d = await api('/rest/v1/documents?select=id,kind,name,storage_key,employee_id,created_at,employees(first_name,last_name)&order=created_at.desc&limit=500');
+    const kinds = ['Tous', ...new Set(d.map(x => x.kind))];
+    let cat = 'Tous';
+    const proprio = x => x.employee_id ? (x.employees ? `${x.employees.first_name} ${x.employees.last_name}` : 'Salarié') : 'Entreprise';
+    const peutSuppr = x => estRH() || (S.me && x.employee_id === S.me.id);
+    e.innerHTML = `<h1>Documents</h1><p class="sous">Documents de l'entreprise et des salariés. Cherchez par exemple « Contrat Kouassi ».</p>
+      ${estRH() ? '<button class="btn" id="dc-new" style="margin-top:14px">Ajouter un document de l\'entreprise</button>' : ''}
+      <input class="recherche" id="dc-rech" type="search" placeholder="Chercher un document" aria-label="Chercher un document">
+      <div id="dc-cats" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"></div><div id="dc-liste"></div>`;
+    const rendu = () => {
+      $('#dc-cats').innerHTML = kinds.map(k => `<button class="petit" data-k="${esc(k)}" style="${k === cat ? 'background:var(--foret);color:var(--blanc)' : ''}">${k === 'Tous' ? 'Tous' : esc(DOC_TYPES[k] || k)}</button>`).join('');
+      $$('#dc-cats [data-k]').forEach(b => b.onclick = () => { cat = b.dataset.k; rendu(); });
+      const mots = norm($('#dc-rech').value).split(/\s+/).filter(m => m.length > 2);
+      const res = d.filter(x => (cat === 'Tous' || x.kind === cat) && mots.every(m => norm(`${x.name} ${proprio(x)} ${DOC_TYPES[x.kind] || ''}`).includes(m)));
+      $('#dc-liste').innerHTML = res.length ? res.map(x => `<div class="carte" style="padding:10px 14px"><div class="ligne-info" style="align-items:center;border:0;padding:0">
+        <span style="color:var(--encre);min-width:0"><strong style="display:block;font-size:14.5px;overflow-wrap:anywhere">${esc(x.name)}</strong><small style="color:var(--gris)">${esc(DOC_TYPES[x.kind] || x.kind)} · ${esc(proprio(x))}</small></span>
+        <span style="white-space:nowrap"><button class="petit" data-o="${esc(x.storage_key)}">Ouvrir</button>${peutSuppr(x) ? ` <button class="petit" data-s="${esc(x.id)}" data-k2="${esc(x.storage_key)}" style="color:var(--rouge)">Supprimer</button>` : ''}</span></div></div>`).join('')
+        : '<p class="sous">Aucun document trouvé.</p>';
+      $$('#dc-liste [data-o]').forEach(b => b.onclick = () => ouvrirDoc(b.dataset.o));
+      $$('#dc-liste [data-s]').forEach(b => b.onclick = async () => { if (!confirm('Supprimer ce document ?')) return; await supprimerDoc(b.dataset.s, b.dataset.k2); tabDocuments(e); });
+    };
+    $('#dc-rech').oninput = rendu; rendu();
+    if ($('#dc-new')) $('#dc-new').onclick = () => formDoc(async () => 'entreprise', () => tabDocuments(e));
+  }catch(err){ e.innerHTML = `<h1>Documents</h1><p class="msg">${esc(traduire(err.message))}</p>`; }
+}
+
+/* ============ Rapports ============ */
+async function tabRapports(e){
+  e.innerHTML = '<h1>Rapports</h1><p class="sous">Chargement…</p>';
+  const jour = auj(), debutMois = jour.slice(0, 8) + '01', annee = jour.slice(0, 4);
+  try{
+    const [emps, pres, conges, forms, runs] = await Promise.all([
+      api('/rest/v1/employees?select=id,first_name,last_name,job_title,department,hired_on,left_on,matricule,phone,email&order=last_name.asc'),
+      api(`/rest/v1/attendance?select=employee_id,day,status,check_in,check_out&day=gte.${debutMois}`),
+      api(`/rest/v1/leave_requests?select=days,starts_on,ends_on,status,employees(first_name,last_name),leave_types(label)&status=eq.approved&ends_on=gte.${debutMois}`),
+      api(`/rest/v1/trainings?select=id,done_on&done_on=gte.${annee}-01-01`),
+      api('/rest/v1/payroll_runs?select=id,period,status&order=period.desc&limit=6')
+    ]);
+    const slips = runs.length ? await api(`/rest/v1/payslips?select=run_id,gross,net,employer_cost&run_id=in.(${runs.map(r => r.id).join(',')})`) : [];
+    const actifs = emps.filter(x => !x.left_on);
+    const parService = {}; actifs.forEach(x => { const s = x.department || 'Sans service'; parService[s] = (parService[s] || 0) + 1; });
+    const maxS = Math.max(1, ...Object.values(parService));
+    const avecDate = actifs.filter(x => x.hired_on);
+    const anc = avecDate.length ? (avecDate.reduce((s, x) => s + (Date.now() - new Date(x.hired_on + 'T00:00:00')) / 31557600000, 0) / avecDate.length) : null;
+    const presents = pres.filter(p => p.status === 'present' || p.status === 'late').length;
+    const taux = pres.length ? Math.round(presents / pres.length * 100) : null;
+    const retards = pres.filter(p => p.status === 'late').length, absents = pres.filter(p => p.status === 'absent').length;
+    const joursConges = conges.reduce((s, c) => s + Number(c.days || 0), 0);
+    const masse = runs.slice().reverse().map(r => ({ p:r.period, brut:slips.filter(s => s.run_id === r.id).reduce((t, s) => t + Number(s.gross), 0) }));
+    const maxM = Math.max(1, ...masse.map(m => m.brut));
+    e.innerHTML = `<h1>Rapports</h1><p class="sous">${new Date().toLocaleDateString('fr-FR', { month:'long', year:'numeric' })}</p>
+      <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))"><div class="kpi"><small>Effectif</small><b>${actifs.length}</b></div>
+        <div class="kpi"><small>Ancienneté moyenne</small><b>${anc != null ? anc.toFixed(1).replace('.', ',') + ' ans' : '—'}</b></div>
+        <div class="kpi"><small>Taux de présence (mois)</small><b>${taux != null ? taux + ' %' : '—'}</b></div>
+        <div class="kpi"><small>Retards / absences (mois)</small><b>${retards} / ${absents}</b></div>
+        <div class="kpi"><small>Jours de congé (mois)</small><b>${joursConges}</b></div><div class="kpi"><small>Formations réalisées (année)</small><b>${forms.length}</b></div></div>
+      <h2>Effectifs par service</h2><div class="carte">${Object.entries(parService).map(([s, n]) => `<div class="brow"><span>${esc(s)}</span><div class="bar"><i style="width:${n / maxS * 100}%"></i></div><span>${n}</span></div>`).join('') || '<p class="sous">Aucun salarié.</p>'}</div>
+      <h2>Masse salariale brute</h2><div class="carte">${masse.length ? masse.map(m => `<div class="brow" style="grid-template-columns:90px 1fr 90px"><span>${esc(moisFr(m.p))}</span><div class="bar"><i style="width:${m.brut / maxM * 100}%"></i></div><span>${Math.round(m.brut).toLocaleString('fr-FR')}</span></div>`).join('')
+        : '<p class="sous">Aucun mois de paie calculé (onglet Paie).</p>'}</div>
+      <h2>Exports (fichier CSV, lisible dans Excel)</h2>
+      <button class="btn clair" id="rp-emp" style="margin-top:0">Exporter la liste des salariés</button>
+      <button class="btn clair" id="rp-pre" style="margin-top:10px">Exporter la présence du mois</button>
+      <button class="btn clair" id="rp-con" style="margin-top:10px">Exporter les congés acceptés</button>`;
+    $('#rp-emp').onclick = () => telechargerCsv('salaries.csv', [['Matricule', 'Nom', 'Prénoms', 'Poste', 'Service', "Date d'embauche", 'Téléphone', 'E-mail', 'Départ'],
+      ...emps.map(x => [x.matricule, x.last_name, x.first_name, x.job_title, x.department, x.hired_on, x.phone, x.email, x.left_on])]);
+    $('#rp-pre').onclick = () => { const nom = id => { const x = emps.find(s => s.id === id); return x ? `${x.last_name} ${x.first_name}` : ''; };
+      telechargerCsv('presence-mois.csv', [['Salarié', 'Jour', 'Statut', 'Arrivée', 'Départ'], ...pres.map(p => [nom(p.employee_id), p.day, (STATUTS[p.status] || [p.status])[0], hhmm(p.check_in), hhmm(p.check_out)])]); };
+    $('#rp-con').onclick = () => telechargerCsv('conges.csv', [['Salarié', 'Type', 'Du', 'Au', 'Jours'],
+      ...conges.map(c => [c.employees ? `${c.employees.last_name} ${c.employees.first_name}` : '', c.leave_types ? c.leave_types.label : '', c.starts_on, c.ends_on, c.days])]);
+  }catch(err){ e.innerHTML = `<h1>Rapports</h1><p class="msg">${esc(traduire(err.message))}</p>`; }
+}
+
+/* ============ Recrutement ============ */
+const ETAPES = { received:'Reçue', shortlisted:'Présélectionnée', interview:'Entretien', decision:'Décision', hired:'Embauchée', rejected:'Refusée' };
+let OFFRE = null;
+async function tabRecrutement(e){
+  e.innerHTML = '<h1>Recrutement</h1><p class="sous">Chargement…</p>';
+  try{
+    const [offres, cand] = await Promise.all([
+      api('/rest/v1/job_offers?select=id,title,description,status&order=title.asc'),
+      api('/rest/v1/applications?select=id,offer_id,stage,score,score_details,notes,candidates(id,full_name,email,phone,cv_key)&order=score.desc.nullslast')
+    ]);
+    const of = OFFRE && offres.find(o => o.id === OFFRE);
+    if (!of){
+      OFFRE = null;
+      e.innerHTML = `<h1>Recrutement</h1><p class="sous">Offres d'emploi et candidats</p>
+        <button class="btn" id="rc-new" style="margin-top:14px">Créer une offre</button>
+        <div style="margin-top:14px">${offres.length ? offres.map(o => `<button class="sal" data-o="${esc(o.id)}"><div><strong>${esc(o.title)}</strong><small>${cand.filter(c => c.offer_id === o.id).length} candidat(s)</small></div>
+          <span class="chip-s ${o.status === 'open' ? 's-ok' : 's-nd'}" style="margin-left:auto">${o.status === 'open' ? 'Ouverte' : 'Clôturée'}</span></button>`).join('') : '<p class="sous">Aucune offre pour le moment.</p>'}</div>`;
+      $('#rc-new').onclick = () => formOffre(() => tabRecrutement(e));
+      e.querySelectorAll('[data-o]').forEach(b => b.onclick = () => { OFFRE = b.dataset.o; tabRecrutement(e); });
+      return;
+    }
+    const mes = cand.filter(c => c.offer_id === of.id);
+    e.innerHTML = `<button class="lien" id="rc-back" style="margin:0 0 8px;text-align:left;width:auto">← Toutes les offres</button>
+      <h1>${esc(of.title)}</h1><p class="sous">${esc(of.description || 'Pas de description')}</p>
+      <button class="btn" id="rc-add" style="margin-top:14px">Ajouter un candidat</button>
+      <div style="margin-top:14px">${mes.length ? mes.map(c => `<button class="sal" data-c="${esc(c.id)}"><div class="avatar">${esc(ini(...(c.candidates.full_name || '?').split(' ')))}</div>
+        <div><strong>${esc(c.candidates.full_name)}</strong><small>${esc(ETAPES[c.stage] || c.stage)}</small></div>
+        <span class="chip-s ${c.score != null ? 's-ok' : 's-nd'}" style="margin-left:auto">${c.score != null ? Math.round(c.score) + ' %' : 'Non noté'}</span></button>`).join('') : '<p class="sous">Aucun candidat pour cette offre.</p>'}</div>
+      <div style="display:flex;gap:8px;margin-top:10px"><button class="btn clair" id="rc-cl" style="margin:0">${of.status === 'open' ? 'Clôturer l\'offre' : 'Rouvrir l\'offre'}</button><button class="btn rouge" id="rc-del" style="margin:0">Supprimer l'offre</button></div>
+      <p class="note">Le score aide à comparer les candidats. Il ne remplace jamais la décision humaine.</p>`;
+    $('#rc-back').onclick = () => { OFFRE = null; tabRecrutement(e); };
+    $('#rc-add').onclick = () => formCandidat(of, () => tabRecrutement(e));
+    e.querySelectorAll('[data-c]').forEach(b => b.onclick = () => ficheCandidat(of, mes.find(c => c.id === b.dataset.c), () => tabRecrutement(e)));
+    $('#rc-cl').onclick = async () => { try{ await api(`/rest/v1/job_offers?id=eq.${encodeURIComponent(of.id)}`, { method:'PATCH', headers:{ Prefer:'return=minimal' }, body:{ status:of.status === 'open' ? 'closed' : 'open' } }); tabRecrutement(e); }catch(err){ toast(traduire(err.message)); } };
+    $('#rc-del').onclick = async () => { if (!confirm('Supprimer cette offre et ses candidatures ?')) return;
+      try{ await api(`/rest/v1/job_offers?id=eq.${encodeURIComponent(of.id)}`, { method:'DELETE' }); OFFRE = null; toast('Offre supprimée'); tabRecrutement(e); }catch(err){ toast(traduire(err.message)); } };
+  }catch(err){ e.innerHTML = `<h1>Recrutement</h1><p class="msg">${esc(traduire(err.message))}</p>`; }
+}
+function formOffre(apres){
+  ouvrirFeuille(`<h2 style="margin-top:0">Nouvelle offre</h2><form class="form" id="f-of">
+    <label for="of-t">Intitulé du poste</label><input id="of-t" required placeholder="Ex. Assistant RH">
+    <label for="of-d">Description (facultatif)</label><input id="of-d">
+    <button class="btn" id="of-ok">Créer</button><button class="btn clair" type="button" id="of-no">Annuler</button></form><div id="of-msg"></div>`);
+  $('#of-no').onclick = fermerFeuille;
+  $('#f-of').onsubmit = async ev => { ev.preventDefault();
+    try{ const r = await api('/rest/v1/job_offers', { method:'POST', headers:{ Prefer:'return=representation' }, body:{ company_id:S.profile.company_id, title:$('#of-t').value.trim(), description:$('#of-d').value.trim() || null } });
+      OFFRE = r[0].id; fermerFeuille(); toast('Offre créée'); apres(); }catch(err){ $('#of-msg').innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; } };
+}
+function formCandidat(of, apres){
+  ouvrirFeuille(`<h2 style="margin-top:0">Nouveau candidat</h2><form class="form" id="f-ca">
+    <label for="ca-n">Nom et prénoms</label><input id="ca-n" required>
+    <label for="ca-e">E-mail</label><input id="ca-e" type="email">
+    <label for="ca-t">Téléphone</label><input id="ca-t" type="tel">
+    <label for="ca-cv">CV (PDF ou photo, 10 Mo maximum, facultatif)</label><input id="ca-cv" type="file" accept="image/*,application/pdf">
+    <button class="btn" id="ca-ok">Ajouter</button><button class="btn clair" type="button" id="ca-no">Annuler</button></form><div id="ca-msg"></div>`);
+  $('#ca-no').onclick = fermerFeuille;
+  $('#f-ca').onsubmit = async ev => {
+    ev.preventDefault(); const b = $('#ca-ok'); b.disabled = true; b.textContent = 'Enregistrement…';
+    let cle = null;
+    try{
+      const f = $('#ca-cv').files[0];
+      if (f){
+        if (f.size > 10 * 1024 * 1024) throw new Error('Fichier trop lourd (10 Mo maximum).');
+        await refreshIfNeeded();
+        const propre = f.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9._-]/g, '_');
+        cle = `${S.profile.company_id}/recrutement/${Date.now()}-${propre}`;
+        const r = await fetch(`${CFG.url}/storage/v1/object/documents/${chemin(cle)}`, { method:'POST', headers:{ apikey:CFG.key, Authorization:'Bearer ' + S.session.access_token, 'Content-Type':f.type || 'application/octet-stream', 'x-upsert':'false' }, body:f });
+        if (!r.ok) throw new Error("Envoi du CV impossible");
+      }
+      const c = await api('/rest/v1/candidates', { method:'POST', headers:{ Prefer:'return=representation' }, body:{ company_id:S.profile.company_id, full_name:$('#ca-n').value.trim(), email:$('#ca-e').value.trim() || null, phone:$('#ca-t').value.trim() || null, cv_key:cle } });
+      await api('/rest/v1/applications', { method:'POST', headers:{ Prefer:'return=minimal' }, body:{ company_id:S.profile.company_id, offer_id:of.id, candidate_id:c[0].id } });
+      fermerFeuille(); toast('Candidat ajouté'); apres();
+    }catch(err){
+      if (cle){ try{ await api(`/storage/v1/object/documents/${chemin(cle)}`, { method:'DELETE' }); }catch{} }
+      $('#ca-msg').innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; b.disabled = false; b.textContent = 'Ajouter';
+    }
+  };
+}
+const CRITERES = [['experience', 'Expérience'], ['formation', 'Formation'], ['competences', 'Compétences'], ['entretien', 'Entretien']];
+function ficheCandidat(of, c, apres){
+  if (!c) return;
+  const d = c.score_details || {}, k = c.candidates;
+  ouvrirFeuille(`<div style="display:flex;gap:14px;align-items:center;margin-bottom:8px"><div class="avatar" style="width:52px;height:52px;font-size:18px">${esc(ini(...(k.full_name || '?').split(' ')))}</div>
+    <div><strong style="font-size:18px">${esc(k.full_name)}</strong><br><small style="color:var(--gris)">${esc(of.title)}</small></div></div>
+    <div class="ligne-info"><span>E-mail</span><span>${esc(k.email || 'Non renseigné')}</span></div><div class="ligne-info"><span>Téléphone</span><span>${esc(k.phone || 'Non renseigné')}</span></div>
+    ${k.cv_key ? '<button class="btn clair" id="fc-cv" style="margin-top:10px">Ouvrir le CV</button>' : ''}
+    <div class="form"><label for="cd-st">Étape</label><select id="cd-st">${Object.entries(ETAPES).map(([v, t]) => `<option value="${v}" ${v === c.stage ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+    <h2>Score expliqué (0 à 100 par critère)</h2>
+    <div class="form" style="margin-top:0">${CRITERES.map(([id, l]) => `<label for="sc-${id}" style="margin-top:8px">${l}</label><input id="sc-${id}" type="number" min="0" max="100" value="${d[id] != null ? d[id] : ''}">`).join('')}
+      <label for="sc-notes">Notes</label><input id="sc-notes" value="${esc(c.notes || '')}"></div>
+    <button class="btn" id="cd-ok">Enregistrer</button>
+    ${c.stage === 'hired' ? '<button class="btn clair" id="cd-emp" style="margin-top:10px">Créer la fiche salarié</button>' : ''}
+    <button class="btn clair" id="cd-no" style="margin-top:10px">Fermer</button><div id="cd-msg"></div>
+    <button class="btn rouge" id="cd-del" style="margin-top:10px">Supprimer ce candidat</button>`);
+  $('#cd-no').onclick = fermerFeuille;
+  if ($('#fc-cv')) $('#fc-cv').onclick = () => ouvrirDoc(k.cv_key);
+  $('#cd-ok').onclick = async () => {
+    const det = {}; CRITERES.forEach(([id]) => { const v = $(`#sc-${id}`).value; if (v !== '') det[id] = Math.max(0, Math.min(100, +v)); });
+    const vals = Object.values(det), score = vals.length ? Math.round(vals.reduce((s, x) => s + x, 0) / vals.length) : null;
+    try{ await api(`/rest/v1/applications?id=eq.${encodeURIComponent(c.id)}`, { method:'PATCH', headers:{ Prefer:'return=minimal' },
+      body:{ stage:$('#cd-st').value, score, score_details: vals.length ? det : null, notes:$('#sc-notes').value.trim() || null } });
+      fermerFeuille(); toast('Candidat mis à jour'); apres(); }catch(err){ $('#cd-msg').innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; }
+  };
+  if ($('#cd-emp')) $('#cd-emp').onclick = async () => {
+    const [p, n] = separerNom(k.full_name, false);
+    try{ await api('/rest/v1/employees', { method:'POST', headers:{ Prefer:'return=minimal' }, body:{ company_id:S.profile.company_id, first_name:p || '-', last_name:n || '-', email:k.email, phone:k.phone, job_title:of.title, hired_on:auj() } });
+      await loadEmployees(); fermerFeuille(); toast('Fiche salarié créée'); }catch(err){ $('#cd-msg').innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; }
+  };
+  $('#cd-del').onclick = async () => { if (!confirm('Supprimer ce candidat ?')) return;
+    try{ await api(`/rest/v1/candidates?id=eq.${encodeURIComponent(k.id)}`, { method:'DELETE' }); if (k.cv_key){ try{ await api(`/storage/v1/object/documents/${chemin(k.cv_key)}`, { method:'DELETE' }); }catch{} } fermerFeuille(); toast('Candidat supprimé'); apres(); }
+    catch(err){ $('#cd-msg').innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; } };
+}
+
+/* ============ Paie ============ */
+const TYPES_REGLE = { prime:'Prime ou indemnité', retenue_salarie:'Retenue sur le salarié', charge_employeur:"Charge de l'employeur" };
+const AVERTISSEMENT_PAIE = '<div class="carte" style="border-left:6px solid var(--ambre)"><strong>À savoir</strong><p class="sous" style="margin-top:4px">Les règles et taux sont saisis par votre entreprise. L\'application n\'applique aucune loi automatiquement : vérifiez les taux (cotisations sociales, impôts) avec les textes officiels de votre pays ou avec un comptable. Les barèmes progressifs seront ajoutés avec les règles officielles de chaque pays.</p></div>';
+
+function calculerPaie(emps, contrats, regles, periode){
+  const [an, mo] = periode.split('-').map(Number);
+  const debut = periode + '-01', fin = new Date(Date.UTC(an, mo, 0)).toISOString().slice(0, 10);
+  const montant = (r, base, brut) => Math.round(r.mode === 'fixed' ? Number(r.value) : (r.base === 'brut' ? brut : base) * Number(r.value) / 100);
+  return emps.filter(x => !x.left_on || x.left_on >= debut).map(x => {
+    const ct = contrats.filter(c => c.employee_id === x.id && c.starts_on <= fin && (!c.ends_on || c.ends_on >= debut)).sort((a, b) => b.starts_on.localeCompare(a.starts_on))[0];
+    if (!ct) return null;
+    const base = Math.round(Number(ct.base_salary)), lignes = [{ rule_code:'base', label:'Salaire de base', kind:'earning', amount:base }];
+    regles.filter(r => r.kind === 'prime').forEach(r => lignes.push({ rule_code:r.id, label:r.label, kind:'earning', amount:montant(r, base, base) }));
+    const brut = lignes.reduce((s, l) => s + l.amount, 0);
+    regles.filter(r => r.kind === 'retenue_salarie').forEach(r => lignes.push({ rule_code:r.id, label:r.label, kind:'deduction', amount:montant(r, base, brut) }));
+    const retenues = lignes.filter(l => l.kind === 'deduction').reduce((s, l) => s + l.amount, 0);
+    regles.filter(r => r.kind === 'charge_employeur').forEach(r => lignes.push({ rule_code:r.id, label:r.label, kind:'employer_cost', amount:montant(r, base, brut) }));
+    const charges = lignes.filter(l => l.kind === 'employer_cost').reduce((s, l) => s + l.amount, 0);
+    return { emp:x, lignes, brut, net:brut - retenues, cout:brut + charges };
+  }).filter(Boolean);
+}
+function htmlBulletin(emp, periode, lignes, net, avecCharges){
+  const g = k => lignes.filter(l => l.kind === k);
+  const tab = (titre, ls) => ls.length ? `<h2>${titre}</h2><table>${ls.map(l => `<tr><td>${esc(l.label)}</td><td>${fmtF(l.amount)}</td></tr>`).join('')}</table>` : '';
+  return `<h1>Bulletin de paie</h1><small>${esc(S.company.name)} · ${esc(moisFr(periode))}</small>
+    <p style="margin:12px 0 0"><strong>${esc(emp.first_name)} ${esc(emp.last_name)}</strong>${emp.job_title ? '<br><small>' + esc(emp.job_title) + '</small>' : ''}</p>
+    ${tab('Gains', g('earning'))}${tab('Retenues', g('deduction'))}${avecCharges ? tab("Charges de l'employeur", g('employer_cost')) : ''}
+    <div class="net" style="font-size:20px;font-weight:bold;margin-top:18px;display:flex;justify-content:space-between"><span>Net à payer</span><span>${fmtF(net)}</span></div>`;
+}
+async function ouvrirBulletin(slip, emp, periode, avecCharges){
+  ouvrirFeuille('<p class="sous">Chargement…</p>');
+  try{
+    const l = await api(`/rest/v1/payslip_lines?select=label,kind,amount&payslip_id=eq.${encodeURIComponent(slip.id)}&order=id.asc`);
+    const corps = htmlBulletin(emp, periode, l, slip.net, avecCharges);
+    ouvrirFeuille(`<div class="bulletin-zone">${corps}</div><button class="btn" id="bl-pr">Imprimer ou enregistrer en PDF</button><button class="btn clair" id="bl-x">Fermer</button>`);
+    $('#bl-x').onclick = fermerFeuille; $('#bl-pr').onclick = () => imprimerHtml('Bulletin ' + emp.last_name, corps);
+  }catch(err){ ouvrirFeuille(`<p class="msg">${esc(traduire(err.message))}</p><button class="btn clair" id="bl-x">Fermer</button>`); $('#bl-x').onclick = fermerFeuille; }
+}
+async function tabPaie(e){
+  e.innerHTML = '<h1>Paie</h1><p class="sous">Chargement…</p>';
+  try{
+    if (!RH_SENIOR.includes(S.profile.role)){
+      const s = S.me ? await api(`/rest/v1/payslips?select=id,gross,net,payroll_runs(period)&employee_id=eq.${S.me.id}`) : [];
+      s.sort((a, b) => (b.payroll_runs ? b.payroll_runs.period : '').localeCompare(a.payroll_runs ? a.payroll_runs.period : ''));
+      e.innerHTML = `<h1>Mes bulletins de paie</h1><p class="sous">Disponibles une fois le mois validé par les ressources humaines</p>
+        <div style="margin-top:14px">${s.length ? s.map(x => `<button class="sal" data-b="${esc(x.id)}"><div><strong>${esc(x.payroll_runs ? moisFr(x.payroll_runs.period) : 'Bulletin')}</strong><small>Net à payer : ${fmtF(x.net)}</small></div></button>`).join('') : '<p class="sous">Aucun bulletin disponible pour le moment.</p>'}</div>`;
+      e.querySelectorAll('[data-b]').forEach(b => b.onclick = () => { const x = s.find(q => q.id === b.dataset.b); ouvrirBulletin(x, S.me, x.payroll_runs.period, false); });
+      return;
+    }
+    const [emps, contrats, regles, runs] = await Promise.all([
+      api('/rest/v1/employees?select=id,first_name,last_name,job_title,left_on&order=last_name.asc'),
+      api('/rest/v1/contracts?select=id,employee_id,type,starts_on,ends_on,base_salary&order=starts_on.desc'),
+      api('/rest/v1/company_pay_rules?select=id,label,kind,mode,value,base&order=created_at.asc'),
+      api('/rest/v1/payroll_runs?select=id,period,status&order=period.desc&limit=24')
+    ]);
+    const dernier = id => contrats.find(c => c.employee_id === id);
+    const periodeDef = auj().slice(0, 7);
+    e.innerHTML = `<h1>Paie</h1><p class="sous">Salaires, règles de l'entreprise et bulletins</p><div style="margin-top:14px">${AVERTISSEMENT_PAIE}</div>
+      <h2>Salaires de base</h2>${emps.length ? emps.map(x => { const c = dernier(x.id); return `<button class="sal" data-sal="${esc(x.id)}"><div class="avatar">${esc(ini(x.first_name, x.last_name))}</div>
+        <div><strong>${esc(x.first_name)} ${esc(x.last_name)}</strong><small>${c ? fmtF(c.base_salary) + ' · ' + esc(c.type) : 'Salaire non défini'}</small></div></button>`; }).join('') : '<p class="sous">Ajoutez d\'abord des salariés.</p>'}
+      <h2>Règles de paie de l'entreprise</h2><div class="carte" style="padding:4px 14px">${regles.map(r => `<div class="ligne-info" style="align-items:center"><span style="color:var(--encre)"><strong style="font-size:14.5px">${esc(r.label)}</strong>
+        <small style="display:block;color:var(--gris)">${esc(TYPES_REGLE[r.kind])} · ${r.mode === 'percent' ? Number(r.value) + ' % du ' + (r.base === 'brut' ? 'brut' : 'salaire de base') : fmtF(r.value)}</small></span>
+        <button class="petit" data-dr="${esc(r.id)}" style="color:var(--rouge)">Supprimer</button></div>`).join('') || '<p class="sous" style="padding:10px 0">Aucune règle : le bulletin ne contiendra que le salaire de base.</p>'}</div>
+      <button class="btn clair" id="pa-regle" style="margin-top:0">Ajouter une règle</button>
+      <h2>Calculer la paie</h2><div class="carte form"><label for="pa-mois" style="margin-top:0">Mois</label><input id="pa-mois" type="month" value="${periodeDef}">
+        <button class="btn" id="pa-calc">Calculer</button><div id="pa-res" style="margin-top:12px"></div></div>
+      <h2>Mois enregistrés</h2>${runs.length ? runs.map(r => `<button class="sal" data-run="${esc(r.id)}"><div><strong>${esc(moisFr(r.period))}</strong></div>
+        <span class="chip-s ${r.status === 'validated' ? 's-ok' : 's-att'}" style="margin-left:auto">${r.status === 'validated' ? 'Validé' : 'Brouillon'}</span></button>`).join('') : '<p class="sous">Aucun mois enregistré.</p>'}`;
+    e.querySelectorAll('[data-sal]').forEach(b => b.onclick = () => formSalaire(emps.find(x => x.id === b.dataset.sal), dernier(b.dataset.sal), () => tabPaie(e)));
+    $('#pa-regle').onclick = () => formRegle(() => tabPaie(e));
+    e.querySelectorAll('[data-dr]').forEach(b => b.onclick = async () => { if (!confirm('Supprimer cette règle ?')) return;
+      try{ await api(`/rest/v1/company_pay_rules?id=eq.${encodeURIComponent(b.dataset.dr)}`, { method:'DELETE' }); tabPaie(e); }catch(err){ toast(traduire(err.message)); } });
+    $('#pa-calc').onclick = () => apercuPaie(emps, contrats, regles, $('#pa-mois').value, () => tabPaie(e));
+    e.querySelectorAll('[data-run]').forEach(b => b.onclick = () => ouvrirMois(runs.find(r => r.id === b.dataset.run), emps, () => tabPaie(e)));
+  }catch(err){ e.innerHTML = `<h1>Paie</h1><p class="msg">${esc(traduire(err.message))}</p>`; }
+}
+function formSalaire(x, ct, apres){
+  ouvrirFeuille(`<h2 style="margin-top:0">${esc(x.first_name)} ${esc(x.last_name)}</h2><form class="form" id="f-sa">
+    <label for="sa-t">Type de contrat</label><select id="sa-t">${['CDI', 'CDD', 'stage', 'autre'].map(t => `<option ${ct && ct.type === t ? 'selected' : ''}>${t}</option>`).join('')}</select>
+    <label for="sa-d">Date de début</label><input id="sa-d" type="date" required value="${esc(ct ? ct.starts_on : '')}">
+    <label for="sa-f">Date de fin (CDD, facultatif)</label><input id="sa-f" type="date" value="${esc(ct && ct.ends_on ? ct.ends_on : '')}">
+    <label for="sa-s">Salaire de base mensuel (${esc(devise())})</label><input id="sa-s" type="number" min="0" step="1" required value="${ct ? Number(ct.base_salary) : ''}">
+    <button class="btn" id="sa-ok">Enregistrer</button><button class="btn clair" type="button" id="sa-no">Annuler</button></form><div id="sa-msg"></div>`);
+  $('#sa-no').onclick = fermerFeuille;
+  $('#f-sa').onsubmit = async ev => { ev.preventDefault();
+    const corps = { type:$('#sa-t').value, starts_on:$('#sa-d').value, ends_on:$('#sa-f').value || null, base_salary:+$('#sa-s').value };
+    try{
+      if (ct) await api(`/rest/v1/contracts?id=eq.${encodeURIComponent(ct.id)}`, { method:'PATCH', headers:{ Prefer:'return=minimal' }, body:corps });
+      else await api('/rest/v1/contracts', { method:'POST', headers:{ Prefer:'return=minimal' }, body:{ ...corps, company_id:S.profile.company_id, employee_id:x.id } });
+      fermerFeuille(); toast('Salaire enregistré'); apres();
+    }catch(err){ $('#sa-msg').innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; } };
+}
+function formRegle(apres){
+  ouvrirFeuille(`<h2 style="margin-top:0">Nouvelle règle de paie</h2><form class="form" id="f-re">
+    <label for="re-n">Nom</label><input id="re-n" required placeholder="Ex. Prime de transport">
+    <label for="re-k">Type</label><select id="re-k">${Object.entries(TYPES_REGLE).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select>
+    <label for="re-m">Mode</label><select id="re-m"><option value="fixed">Montant fixe</option><option value="percent">Pourcentage</option></select>
+    <label for="re-v">Valeur (montant ou %)</label><input id="re-v" type="number" min="0" step="0.01" required>
+    <label for="re-b">Pourcentage calculé sur</label><select id="re-b"><option value="base">Le salaire de base</option><option value="brut">Le salaire brut</option></select>
+    <button class="btn" id="re-ok">Ajouter</button><button class="btn clair" type="button" id="re-no">Annuler</button></form><div id="re-msg"></div>`);
+  $('#re-no').onclick = fermerFeuille;
+  $('#f-re').onsubmit = async ev => { ev.preventDefault();
+    try{ await api('/rest/v1/company_pay_rules', { method:'POST', headers:{ Prefer:'return=minimal' }, body:{ company_id:S.profile.company_id, label:$('#re-n').value.trim(), kind:$('#re-k').value, mode:$('#re-m').value, value:+$('#re-v').value, base:$('#re-b').value } });
+      fermerFeuille(); toast('Règle ajoutée'); apres(); }catch(err){ $('#re-msg').innerHTML = `<p class="msg">${esc(traduire(err.message))}</p>`; } };
+}
+async function apercuPaie(emps, contrats, regles, periode, apres){
+  const z = $('#pa-res'); if (!periode){ z.innerHTML = '<p class="msg">Choisissez un mois.</p>'; return; }
+  const res = calculerPaie(emps, contrats, regles, periode);
+  if (!res.length){ z.innerHTML = '<p class="msg">Aucun salarié avec un contrat actif ce mois-là. Définissez d\'abord les salaires.</p>'; return; }
+  const t = k => res.reduce((s, r) => s + r[k], 0);
+  z.innerHTML = `<div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr));margin-top:0"><div class="kpi"><small>Salariés</small><b>${res.length}</b></div><div class="kpi"><small>Brut total</small><b style="font-size:17px">${fmtF(t('brut'))}</b></div>
+    <div class="kpi"><small>Net total</small><b style="font-size:17px">${fmtF(t('net'))}</b></div><div class="kpi"><small>Coût employeur</small><b style="font-size:17px">${fmtF(t('cout'))}</b></div></div>
+    <button class="btn ambre" id="pa-save" style="margin-top:12px">Enregistrer comme brouillon</button>`;
+  $('#pa-save').onclick = async () => {
+    const b = $('#pa-save'); b.disabled = true;
+    try{
+      const ex = await api(`/rest/v1/payroll_runs?select=id,status&period=eq.${periode}-01`);
+      if (ex[0] && ex[0].status === 'validated') throw new Error('Ce mois est déjà validé : il ne peut plus être modifié.');
+      if (ex[0]){ if (!confirm('Un brouillon existe déjà pour ce mois : le remplacer ?')){ b.disabled = false; return; } await api(`/rest/v1/payroll_runs?id=eq.${ex[0].id}`, { method:'DELETE' }); }
+      const run = (await api('/rest/v1/payroll_runs', { method:'POST', headers:{ Prefer:'return=representation' }, body:{ company_id:S.profile.company_id, period:periode + '-01', status:'draft' } }))[0];
+      const slips = await api('/rest/v1/payslips', { method:'POST', headers:{ Prefer:'return=representation' }, body:res.map(r => ({ company_id:S.profile.company_id, run_id:run.id, employee_id:r.emp.id, gross:r.brut, net:r.net, employer_cost:r.cout })) });
+      const lignes = []; res.forEach(r => { const s = slips.find(q => q.employee_id === r.emp.id); r.lignes.forEach(l => lignes.push({ payslip_id:s.id, rule_code:l.rule_code === 'base' ? 'base' : null, label:l.label, kind:l.kind, amount:l.amount })); });
+      for (let i = 0; i < lignes.length; i += 200) await api('/rest/v1/payslip_lines', { method:'POST', headers:{ Prefer:'return=minimal' }, body:lignes.slice(i, i + 200) });
+      toast('Brouillon enregistré'); apres();
+    }catch(err){ toast(traduire(err.message)); b.disabled = false; }
+  };
+}
+async function ouvrirMois(run, emps, apres){
+  ouvrirFeuille('<p class="sous">Chargement…</p>');
+  try{
+    const s = await api(`/rest/v1/payslips?select=id,employee_id,gross,net,employer_cost&run_id=eq.${run.id}`);
+    const nom = id => { const x = emps.find(q => q.id === id); return x ? `${x.first_name} ${x.last_name}` : 'Salarié'; };
+    const valide = run.status === 'validated';
+    ouvrirFeuille(`<h2 style="margin-top:0">${esc(moisFr(run.period))} <span class="chip-s ${valide ? 's-ok' : 's-att'}">${valide ? 'Validé' : 'Brouillon'}</span></h2>
+      <p class="sous">${s.length} bulletin(s) · Brut ${fmtF(s.reduce((t, x) => t + Number(x.gross), 0))} · Net ${fmtF(s.reduce((t, x) => t + Number(x.net), 0))}</p>
+      <div style="margin-top:10px">${s.map(x => `<button class="sal" data-s="${esc(x.id)}"><div><strong>${esc(nom(x.employee_id))}</strong><small>Net : ${fmtF(x.net)}</small></div></button>`).join('')}</div>
+      ${valide ? '<p class="note">Mois validé : les salariés peuvent voir leur bulletin. Il ne peut plus être modifié.</p>' : '<button class="btn" id="mo-val">Valider ce mois</button><button class="btn rouge" id="mo-del" style="margin-top:10px">Supprimer ce brouillon</button>'}
+      <button class="btn clair" id="mo-x" style="margin-top:10px">Fermer</button>`);
+    $('#mo-x').onclick = fermerFeuille;
+    $$('#feuille [data-s]').forEach(b => b.onclick = () => { const x = s.find(q => q.id === b.dataset.s); ouvrirBulletin(x, emps.find(q => q.id === x.employee_id) || {}, run.period, true); });
+    if ($('#mo-val')) $('#mo-val').onclick = async () => { if (!confirm('Valider ce mois ? Il ne pourra plus être modifié et les salariés verront leur bulletin.')) return;
+      try{ await api(`/rest/v1/payroll_runs?id=eq.${run.id}`, { method:'PATCH', headers:{ Prefer:'return=minimal' }, body:{ status:'validated' } }); fermerFeuille(); toast('Mois validé'); apres(); }catch(err){ toast(traduire(err.message)); } };
+    if ($('#mo-del')) $('#mo-del').onclick = async () => { if (!confirm('Supprimer ce brouillon ?')) return;
+      try{ await api(`/rest/v1/payroll_runs?id=eq.${run.id}`, { method:'DELETE' }); fermerFeuille(); toast('Brouillon supprimé'); apres(); }catch(err){ toast(traduire(err.message)); } };
+  }catch(err){ ouvrirFeuille(`<p class="msg">${esc(traduire(err.message))}</p><button class="btn clair" id="mo-x">Fermer</button>`); $('#mo-x').onclick = fermerFeuille; }
+}
+
+async function signout(){
+  try{ await raw('/auth/v1/logout', { method:'POST' }); }catch{}
+  resetLocal(); render();
+}
+
+/* ============ Démarrage ============ */
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+loadSession();
+if (S.session) loadAll(); else { S.loading = false; render(); }
+</script>
+</body>
+</html>
